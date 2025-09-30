@@ -277,7 +277,7 @@ function newColour() {
                 1px 1px 0 #fff;
         }
         
-        /* ⭐️ 변경 사항: 이모지 전용 스타일 추가 (제목 크기 2.2em의 85%로 조정) ⭐️ */
+        /* 이모지 전용 스타일 */
         .emoji-small {
             font-size: 0.85em; 
         }
@@ -642,7 +642,7 @@ function newColour() {
     </div>
 
     <script>
-        // ⭐️ Apps Script URL을 다시 한번 확인하고 붙여넣어주세요 ⭐️
+        // ⭐️ Apps Script URL을 요청하신 프록시 URL로 업데이트했습니다. ⭐️
         const APPS_SCRIPT_URL = "https://bannermoa-proxy.bbglara.workers.dev/exec"; 
 
         window.onload = function() {
@@ -754,6 +754,10 @@ function newColour() {
             }
             
             const entries = await fetchEntriesFromSheet();
+            
+            // ⭐️ 핵심 변경: 최신 항목(큰 ID)이 목록의 앞에 오도록 순서를 뒤집습니다. ⭐️
+            entries.reverse(); 
+            
             renderEntries(entries);
         }
 
@@ -884,6 +888,7 @@ function newColour() {
                 return;
             }
             
+            // allEntries 배열은 이미 loadEntries에서 reverse()를 거쳤으므로, 비밀번호 일치 여부만 확인합니다.
             const isMatch = allEntries.some(e => e.password === password);
 
             if (!isMatch) {
@@ -991,4 +996,3 @@ function newColour() {
     </script>
 </body>
 </html>
-
