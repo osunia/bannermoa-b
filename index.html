@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script type="text/javascript">
+// <![CDATA[
+var colour="custom"; // "custom"을 사용하여 사용자 정의 색상을 활성화합니다.
+var sparkles=50;
+
+/****************************
+* Tinkerbell Magic Sparkle *
+*(c)2005-13 mf2fm web-design*
+* http://www.mf2fm.com/rv  *
+* DON'T EDIT BELOW THIS BOX *
+****************************/
+var x=ox=400;
+var y=oy=300;
+var swide=800;
+var shigh=600;
+var sleft=sdown=0;
+var tiny=new Array();
+var star=new Array();
+var starv=new Array();
+var starx=new Array();
+var stary=new Array();
+var tinyx=new Array();
+var tinyy=new Array();
+var tinyv=new Array();
+var last_scroll_time = 0; 
+var is_active = false; 
+
+// ⬇️ 사용자 정의 색상 배열 정의
+var customColours = [
+    "#A52A2A", // 갈색 (Brown)
+    "#D2B48C", // 연갈색 (Tan)
+    "#F5DEB3", // 연노랑 (Wheat)
+    "#B8860B", // 진한 황금색
+    "#DEB887", // 부드러운 나무색
+    "#FFD700"  // 황금색 (밝은 노란색 계열)
+];
+
+// ⬇️ 모바일 환경 감지 함수
+function isMobile() {
+    var userAgent = navigator.userAgent.toLowerCase();
+    return /android|iphone|ipad|ipod|blackberry|windows phone/g.test(userAgent);
+}
+
+// ⬇️ 파티클 초기화 함수
+function initializeSparkles() { 
+    if (document.getElementById) {
+        var i, rats, rlef, rdow;
+        for (var i=0; i<sparkles; i++) {
+            var rats=createDiv(3, 3);
+            rats.style.visibility="hidden";
+            rats.style.zIndex="999";
+            document.body.appendChild(tiny[i]=rats);
+            starv[i]=0;
+            tinyv[i]=0;
+            var rats=createDiv(5, 5);
+            rats.style.backgroundColor="transparent";
+            rats.style.visibility="hidden";
+            rats.style.zIndex="999";
+            var rlef=createDiv(1, 5);
+            var rdow=createDiv(5, 1);
+            rats.appendChild(rlef);
+            rats.appendChild(rdow);
+            rlef.style.top="2px";
+            rlef.style.left="0px";
+            rdow.style.top="0px";
+            rdow.style.left="2px";
+            document.body.appendChild(star[i]=rats);
+        }
+        set_width();
+        sparkle();
+    }
+}
+
+// ⬇️ 이벤트 핸들러 설정 로직: PC일 때만 마우스 이벤트를 연결합니다.
+(function setupEvents() {
+    if (!isMobile()) {
+        document.onmousemove=mouse;
+        window.addEventListener('scroll', scrollMove, { passive: true });
+    }
+})();
+
+function sparkle() {
+    var c;
+    if (is_active && (Math.abs(x-ox)>1 || Math.abs(y-oy)>1)) {
+        ox=x;
+        oy=y;
+        is_active = false; 
+        for (c=0; c<sparkles; c++) if (!starv[c]) {
+            star[c].style.left=(starx[c]=x)+"px";
+            star[c].style.top=(stary[c]=y+1)+"px";
+            star[c].style.clip="rect(0px, 5px, 5px, 0px)";
+            var selectedColour = (colour == "custom" || colour == "random") ? newColour() : colour;
+            star[c].childNodes[0].style.backgroundColor = star[c].childNodes[1].style.backgroundColor = selectedColour;
+            star[c].style.visibility="visible";
+            starv[c]=50;
+            break;
+        }
+    }
+    for (c=0; c<sparkles; c++) {
+        if (starv[c]) update_star(c);
+        if (tinyv[c]) update_tiny(c);
+    }
+    setTimeout("sparkle()", 40);
+}
+
+function update_star(i) {
+    if (--starv[i]==25) star[i].style.clip="rect(1px, 4px, 4px, 1px)";
+    if (starv[i]) {
+        stary[i]+=1+Math.random()*3;
+        starx[i]+=(i%5-2)/5;
+        if (stary[i]<shigh+sdown) {
+            star[i].style.top=stary[i]+"px";
+            star[i].style.left=starx[i]+"px";
+        }
+        else {
+            star[i].style.visibility="hidden";
+            starv[i]=0;
+            return;
+        }
+    }
+    else {
+        tinyv[i]=50;
+        tiny[i].style.top=(tinyy[i]=stary[i])+"px";
+        tiny[i].style.left=(tinyx[i]=starx[i])+"px";
+        tiny[i].style.width="2px";
+        tiny[i].style.height="2px";
+        tiny[i].style.backgroundColor=star[i].childNodes[0].style.backgroundColor;
+        star[i].style.visibility="hidden";
+        tiny[i].style.visibility="visible"
+    }
+}
+
+function update_tiny(i) {
+    if (--tinyv[i]==25) {
+        tiny[i].style.width="1px";
+        tiny[i].style.height="1px";
+    }
+    if (tinyv[i]) {
+        tinyy[i]+=1+Math.random()*3;
+        tinyx[i]+=(i%5-2)/5;
+        if (tinyy[i]<shigh+sdown) {
+            tiny[i].style.top=tinyy[i]+"px";
+            tiny[i].style.left=tinyx[i]+"px";
+        }
+        else {
+            tiny[i].style.visibility="hidden";
+            tinyv[i]=0;
+            return;
+        }
+    }
+    else tiny[i].style.visibility="hidden";
+}
+
+function mouse(e) {
+    if (e) {
+        y=e.pageY;
+        x=e.pageX;
+    }
+    else {
+        set_scroll();
+        y=event.y+sdown;
+        x=event.x+sleft;
+    }
+    is_active = true; 
+}
+
+function scrollMove() {
+    var now = Date.now();
+    if (now - last_scroll_time < 100) return; 
+    last_scroll_time = now;
+    set_scroll(); 
+
+    x = sleft + swide / 2;
+    y = sdown + shigh / 2;
+    
+    ox = -1; 
+    oy = -1;
+    is_active = true;
+}
+
+window.onscroll=set_scroll; 
+
+function set_scroll() {
+    if (typeof(self.pageYOffset)=='number') {
+        sdown=self.pageYOffset;
+        sleft=self.pageXOffset;
+    }
+    else if (document.body && (document.body.scrollTop || document.body.scrollLeft)) {
+        sdown=document.body.scrollTop;
+        sleft=document.body.scrollLeft;
+    }
+    else if (document.documentElement && (document.documentElement.scrollTop || document.documentElement.scrollLeft)) {
+        sleft=document.documentElement.scrollLeft;
+        sdown=document.documentElement.scrollTop;
+    }
+    else {
+        sdown=0;
+        sleft=0;
+    }
+}
+
+window.onresize=set_width;
+function set_width() {
+    var sw_min=999999;
+    var sh_min=999999;
+    if (document.documentElement && document.documentElement.clientWidth) {
+        if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
+        if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
+    }
+    if (typeof(self.innerWidth)=='number' && self.innerWidth) {
+        if (self.innerWidth>0 && self.innerWidth<sw_min) sw_min=self.innerWidth;
+        if (self.innerHeight>0 && self.innerHeight<sh_min) sh_min=self.innerHeight;
+    }
+    if (document.body.clientWidth) {
+        if (document.body.clientWidth>0 && document.body.clientWidth<sw_min) sw_min=document.body.clientWidth;
+        if (document.body.clientHeight>0 && document.body.clientHeight<sh_min) sh_min=document.body.clientHeight;
+    }
+    if (sw_min==999999 || sh_min==999999) {
+        sw_min=800;
+        sh_min=600;
+    }
+    swide=sw_min;
+    shigh=sh_min;
+}
+
+function createDiv(height, width) {
+    var div=document.createElement("div");
+    div.style.position="absolute";
+    div.style.height=height+"px";
+    div.style.width=width+"px";
+    div.style.overflow="hidden";
+    return (div);
+}
+
+function newColour() {
+    var index = Math.floor(Math.random() * customColours.length);
+    return customColours[index];
+}
+// ]]>
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌰배너모아🐿️ 명부</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+        
+    <style>
+        /* CSS 스타일 시작 */
+        body {
+            font-family: 'Gowun Dodum', Arial, sans-serif;
+            text-align: center; 
+            margin: 30px;
+            background-image: url('https://i.imgur.com/He4toTS.jpeg');
+            background-size: cover; 
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center center;
+            background-color: #f4f4f9; 
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .container {
+            max-width: 480px; 
+            margin: 0 auto;
+            padding: 25px;
+            background-color: #fff; 
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0; 
+            transition: opacity 1s ease-in-out; 
+        }
+
+        .container.loaded {
+            opacity: 1;
+        }
+        
+        .header-area {
+            background-image: url('https://i.imgur.com/4iyJbxE.png'); 
+            background-size: cover;
+            background-position: center;
+            padding: 20px 0;
+            margin: -25px -25px 30px -25px; 
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .main-title {
+            color: #645d55;
+            font-size: 2.2em;
+            margin-bottom: 0;
+            text-shadow: 
+                -1px -1px 0 #fff,  
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                1px 1px 0 #fff;
+        }
+
+        .emoji {
+            font-size: 0.85em;
+        }
+
+        .sub-title {
+            color: #333;
+            font-size: 0.85em;
+            font-weight: normal;
+            margin: 5px auto 0 auto;
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 255, 0.7); 
+            border-radius: 4px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #ddd;
+            width: 50%;
+            margin: 25px auto; 
+        }
+        
+        .footer {
+            margin-top: 25px;
+            font-size: 0.8em;
+            color: #777;
+            text-align: center; 
+        }
+        .footer a {
+            color: #777;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+
+        /* -------------------------------------- */
+        /* ⬇️ 명부(방명록) 관련 스타일 */
+        /* -------------------------------------- */
+        
+        .board-form-area {
+            background-color: #f7f7f7;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border: 1px solid #ddd;
+        }
+
+        .board-form-area h3 {
+            font-size: 1.1em;
+            color: #444;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Gowun Dodum', sans-serif;
+            font-size: 0.9em;
+        }
+        
+        .form-group .required:after {
+            content: '*';
+            color: #e74c3c;
+            margin-left: 2px;
+        }
+
+        #submitEntry {
+            background-color: #645d55; 
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        #submitEntry:hover {
+            background-color: #7a7066;
+        }
+
+        /* 명부 목록 컨테이너 */
+        #entryListContainer {
+            max-height: 500px; /* 배너가 커지므로 높이 여유를 줌 */
+            overflow-y: auto; 
+            padding: 10px;
+            background-color: #fcfcfc;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-align: left;
+        }
+        
+        #entryListContainer::-webkit-scrollbar {
+            width: 6px;
+        }
+        #entryListContainer::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 3px;
+        }
+        #entryListContainer::-webkit-scrollbar-track {
+            background-color: #f0f0f0;
+        }
+
+        .entry {
+            border-bottom: 1px dashed #eee;
+            padding: 15px 0;
+        }
+        .entry:last-child {
+            border-bottom: none;
+        }
+
+        .entry-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px; /* ⚠️ 배너와의 간격 축소 */
+            flex-wrap: wrap; /* 모바일 환경 대비 */
+        }
+
+        .entry-info {
+            display: flex;
+            align-items: center; 
+        }
+
+        .entry-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 1em;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .entry-timestamp {
+            font-size: 0.75em; 
+            color: #aaa;
+            flex-shrink: 0;
+        }
+
+        /* ⚠️ [배너 위치 변경] 배너를 아래에 배치할 컨테이너 스타일 */
+        .entry-banner-area {
+            display: flex; /* 배너를 중앙에 배치하거나 정렬하기 위해 flex 사용 */
+            justify-content: center; /* 가운데 정렬 */
+            width: 100%;
+            margin-top: 5px; /* ⚠️ 상단 정보와의 간격 */
+        }
+        
+        /* 배너 이미지 크기 200x40px 고정 */
+        .entry-banner {
+            width: 200px;
+            height: 40px; 
+            border: 1px solid #ccc;
+            cursor: pointer;
+            object-fit: cover; 
+            display: block;
+        }
+        
+        .entry-actions {
+            flex-shrink: 0;
+            margin-left: auto; /* 우측 정렬 */
+        }
+
+        .entry-actions button {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 0.8em;
+            margin-left: 10px;
+            cursor: pointer;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: color 0.2s;
+        }
+
+        .entry-actions button:hover {
+            color: #333;
+        }
+        
+        /* 수정 모달 스타일 (삭제 기능 제거, 메시지 필드 제거) */
+        .modal {
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            display: none; 
+        }
+
+        .modal-content {
+            background-color: #fefefee;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 350px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        /* 비밀번호 입력 그룹 */
+        #passwordInputGroup {
+            margin-top: 15px;
+        }
+        #passwordInputGroup input {
+            width: calc(100% - 70px);
+            display: inline-block;
+        }
+        #passwordInputGroup button {
+            width: 60px;
+            padding: 8px 0;
+            margin-left: 5px;
+            background-color: #645d55;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .modal-title {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        /* ⚠️ [변경] 수정 폼 그룹 (배너 주소, 갠홈 주소만 남김) */
+        #editFormGroup {
+            margin-top: 15px;
+            text-align: left;
+        }
+        #editFormGroup input {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        /* -------------------------------------- */
+        /* ⬆️ 명부(방명록) 관련 스타일 끝 */
+        /* -------------------------------------- */
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="header-area">
+            <h1 class="main-title"><span class="emoji">🤝</span>동맹 배너 명부<span class="emoji">🖼️</span></h1>
+            <h2 class="sub-title">배너 교환 및 전시를 위한 공간입니다</h2>
+        </div>
+        
+        <div class="board-form-area">
+            <h3>배너 등록</h3>
+            <div class="form-group">
+                <label for="nameInput"><span class="required">이름</span></label>
+                <input type="text" id="nameInput" placeholder="이름을 입력해주세요." required>
+            </div>
+            <div class="form-group">
+                <label for="homeUrlInput"><span class="required">갠홈 주소</span></label>
+                <input type="text" id="homeUrlInput" placeholder="https://your.home.com" required>
+            </div>
+            <div class="form-group">
+                <label for="bannerUrlInput"><span class="required">갠홈 배너 이미지 주소</span> (권장 200x40px)</label>
+                <input type="text" id="bannerUrlInput" placeholder="https://i.imgur.com/yourbanner.png" required>
+            </div>
+            <div class="form-group">
+                <label for="passwordInput"><span class="required">비밀번호</span> (수정/삭제용)</label>
+                <input type="password" id="passwordInput" placeholder="4자 이상">
+            </div>
+            <button id="submitEntry" onclick="addEntry()">등록하기</button>
+        </div>
+
+        <hr>
+
+        <h2>교환된 배너 목록</h2>
+        
+        <div id="entryListContainer">
+            <p style="text-align: center; color: #aaa; margin: 50px 0;" id="noEntryMessage">
+                아직 등록된 배너가 없습니다.<br>
+                첫 번째 동맹 배너를 등록해주세요!
+            </p>
+        </div>
+        
+        <hr>  
+
+        <div class="footer">
+            <p style="margin-bottom: 3px;">©2025 bannermoa. All rights reserved.</p>
+            <p style="margin-top: 0;"> 
+                <a href="https://sardina.tistory.com/" target="_blank">관리자 R</a>
+            </p>
+        </div>
+
+    </div>
+    
+    <div id="actionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h4 class="modal-title" id="modalTitle">비밀번호 확인</h4>
+            
+            <div id="passwordInputGroup">
+                <input type="password" id="modalPasswordInput" placeholder="비밀번호를 입력하세요">
+                <button onclick="checkPassword()">확인</button>
+            </div>
+            
+            <div id="editFormGroup" style="display: none;">
+                <label for="editHomeUrlInput" style="font-size: 0.85em; color: #666; margin-bottom: 3px;">갠홈 주소</label>
+                <input type="text" id="editHomeUrlInput" required>
+                <label for="editBannerUrlInput" style="font-size: 0.85em; color: #666; margin-bottom: 3px;">배너 이미지 주소</label>
+                <input type="text" id="editBannerUrlInput" required>
+                <button style="margin-top: 10px;" onclick="saveEdit()">수정 저장</button>
+            </div>
+            
+            <p style="text-align: center; color: #e74c3c; font-size: 0.8em; margin-top: 10px;" id="modalError"></p>
+        </div>
+    </div>
+
+
+    <script>
+        // ⬇️ 페이지 로드 및 파티클 초기화
+        window.onload = function() {
+            document.querySelector('.container').classList.add('loaded');
+            if (!isMobile()) {
+                initializeSparkles();  
+            }
+            loadEntries(); 
+        };
+
+        let currentEntryId = null; 
+        let currentAction = null; 
+
+        // ----------------------------------------------------
+        // 1. 데이터 관리 (localStorage 사용)
+        // ----------------------------------------------------
+
+        function getEntries() {
+            return JSON.parse(localStorage.getItem('allyBoardEntries')) || [];
+        }
+
+        function saveEntries(entries) {
+            localStorage.setItem('allyBoardEntries', JSON.stringify(entries));
+        }
+
+        // ----------------------------------------------------
+        // 2. 명부 항목 추가/등록 (필수 항목 변경 반영)
+        // ----------------------------------------------------
+
+        function addEntry() {
+            const name = document.getElementById('nameInput').value.trim();
+            const homeUrl = document.getElementById('homeUrlInput').value.trim();
+            const bannerUrl = document.getElementById('bannerUrlInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+
+            // ⚠️ [변경] 필수 항목 검사: 이름, 갠홈 주소, 배너 주소, 비밀번호
+            if (!name || !homeUrl || !bannerUrl || !password || password.length < 4) {
+                alert('이름, 갠홈 주소, 배너 주소, 비밀번호(4자 이상)는 필수 입력 사항입니다.');
+                return;
+            }
+
+            const newEntry = {
+                id: Date.now(), 
+                name: name,
+                homeUrl: homeUrl,
+                bannerUrl: bannerUrl,
+                password: password, 
+                timestamp: new Date().toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' })
+            };
+
+            const entries = getEntries();
+            entries.unshift(newEntry); 
+            saveEntries(entries);
+
+            // 입력 필드 초기화
+            document.getElementById('nameInput').value = '';
+            document.getElementById('homeUrlInput').value = '';
+            document.getElementById('bannerUrlInput').value = '';
+            document.getElementById('passwordInput').value = '';
+
+            renderEntries();
+        }
+
+        // ----------------------------------------------------
+        // 3. 명부 항목 렌더링 (배너 하단 배치 반영)
+        // ----------------------------------------------------
+
+        function renderEntries() {
+            const container = document.getElementById('entryListContainer');
+            const entries = getEntries();
+            container.innerHTML = ''; 
+
+            if (entries.length === 0) {
+                container.innerHTML = `
+                    <p style="text-align: center; color: #aaa; margin: 50px 0;">
+                        아직 등록된 배너가 없습니다.<br>
+                        첫 번째 동맹 배너를 등록해주세요!
+                    </p>
+                `;
+                return;
+            }
+
+            entries.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'entry';
+                entryDiv.setAttribute('data-id', entry.id);
+
+                // 배너 이미지 HTML (필수이므로 항상 생성)
+                const bannerImg = `<img src="${entry.bannerUrl}" class="entry-banner" alt="배너 이미지" onerror="this.src='https://i.imgur.com/rN5F2yS.png'; this.onerror=null;">`; // 에러 시 대체 이미지 (200x40 더미 이미지)
+
+                // 갠홈 링크가 적용된 배너
+                const linkedBanner = `
+                    <a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;">
+                        ${bannerImg}
+                    </a>
+                `;
+                
+                // 갠홈 링크가 적용된 이름
+                const nameHtml = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; color: inherit;">${entry.name}</a>`;
+
+
+                entryDiv.innerHTML = `
+                    <div class="entry-header">
+                        <div class="entry-info">
+                            <span class="entry-name">${nameHtml}</span>
+                            <span class="entry-timestamp">(${entry.timestamp})</span>
+                        </div>
+                        <div class="entry-actions">
+                            <button onclick="openModal(${entry.id}, 'edit')">수정</button>
+                            <button onclick="openModal(${entry.id}, 'delete')">삭제</button>
+                        </div>
+                    </div>
+                    <div class="entry-banner-area">
+                        ${linkedBanner}
+                    </div>
+                `;
+
+                container.appendChild(entryDiv);
+            });
+        }
+        
+        function loadEntries() {
+            renderEntries();
+        }
+
+
+        // ----------------------------------------------------
+        // 4. 수정/삭제 모달 로직 (메시지 수정 기능 제거)
+        // ----------------------------------------------------
+        
+        function openModal(id, action) {
+            currentEntryId = id;
+            currentAction = action;
+            
+            const modal = document.getElementById('actionModal');
+            const title = document.getElementById('modalTitle');
+            const passwordGroup = document.getElementById('passwordInputGroup');
+            const editForm = document.getElementById('editFormGroup');
+            const errorMsg = document.getElementById('modalError');
+            const entries = getEntries();
+            const entry = entries.find(e => e.id === id);
+
+
+            errorMsg.innerText = ''; 
+            document.getElementById('modalPasswordInput').value = ''; 
+            editForm.style.display = 'none'; 
+            passwordGroup.style.display = 'block'; 
+
+            if (action === 'edit') {
+                title.innerText = '등록 정보 수정 - 비밀번호 확인';
+                // 수정 시 현재 데이터 로드 (수정 모달에 반영될 항목)
+                document.getElementById('editHomeUrlInput').value = entry.homeUrl;
+                document.getElementById('editBannerUrlInput').value = entry.bannerUrl;
+
+            } else if (action === 'delete') {
+                title.innerText = '등록 항목 삭제 - 비밀번호 확인';
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('actionModal').style.display = 'none';
+            document.getElementById('editFormGroup').style.display = 'none';
+            document.getElementById('modalError').innerText = '';
+            document.getElementById('modalPasswordInput').value = '';
+            currentEntryId = null;
+            currentAction = null;
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('modalPasswordInput').value.trim();
+            const errorMsg = document.getElementById('modalError');
+            const entries = getEntries();
+            const entry = entries.find(e => e.id === currentEntryId);
+
+            if (!entry) {
+                errorMsg.innerText = '항목을 찾을 수 없습니다.';
+                return;
+            }
+
+            if (password !== entry.password) {
+                errorMsg.innerText = '비밀번호가 일치하지 않습니다.';
+                return;
+            }
+
+            errorMsg.innerText = '비밀번호 확인 완료.';
+            
+            if (currentAction === 'edit') {
+                // 비밀번호가 맞으면 수정 폼 표시
+                document.getElementById('modalTitle').innerText = '배너/홈 주소 수정';
+                document.getElementById('passwordInputGroup').style.display = 'none';
+                document.getElementById('editFormGroup').style.display = 'block';
+
+            } else if (currentAction === 'delete') {
+                // 비밀번호가 맞으면 바로 삭제 실행
+                deleteEntry(currentEntryId);
+            }
+        }
+        
+        function saveEdit() {
+            const newHomeUrl = document.getElementById('editHomeUrlInput').value.trim();
+            const newBannerUrl = document.getElementById('editBannerUrlInput').value.trim();
+            const entries = getEntries();
+            const index = entries.findIndex(e => e.id === currentEntryId);
+
+            if (index === -1) {
+                alert('수정할 항목을 찾을 수 없습니다.');
+                closeModal();
+                return;
+            }
+            
+            // ⚠️ [변경] 필수 항목 검사: 갠홈 주소, 배너 주소
+            if (!newHomeUrl || !newBannerUrl) {
+                alert('갠홈 주소와 배너 이미지 주소는 필수 입력 항목입니다.');
+                return;
+            }
+
+            entries[index].homeUrl = newHomeUrl;
+            entries[index].bannerUrl = newBannerUrl;
+            saveEntries(entries);
+            renderEntries();
+            closeModal();
+            alert('배너 정보가 수정되었습니다.');
+        }
+
+        function deleteEntry(id) {
+            if (!confirm('정말로 이 배너 등록 항목을 삭제하시겠습니까?')) {
+                closeModal(); 
+                return;
+            }
+            
+            let entries = getEntries();
+            entries = entries.filter(e => e.id !== id);
+            saveEntries(entries);
+            renderEntries();
+            closeModal();
+            alert('등록 항목이 삭제되었습니다.');
+        }
+    </script>
+</body>
+</html>
