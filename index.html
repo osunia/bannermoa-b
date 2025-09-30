@@ -129,11 +129,6 @@ function update_tiny(i) {
             tiny[i].style.top=tinyy[i]+"px";
             tiny[i].style.left=tinyx[i]+"px";
         }
-        else {
-            tiny[i].style.visibility="hidden";
-            tinyv[i]=0;
-            return;
-        }
     }
     else tiny[i].style.visibility="hidden";
 }
@@ -245,7 +240,6 @@ function newColour() {
             font-size: 0.95em;
         }
 
-        /* 메인 페이지 너비에 맞게 최대 너비 480px로 변경 */
         .container {
             max-width: 480px; 
             margin: 0 auto;
@@ -304,7 +298,7 @@ function newColour() {
             display: inline-block;
         }
         
-        /* 버튼 스타일 */
+        /* 버튼 배열 (가로) */
         .register-button-area {
             text-align: center;
             margin: 15px 0 25px 0; 
@@ -313,33 +307,40 @@ function newColour() {
             gap: 5px; 
         }
 
+        /* ⭐️ 버튼 기본 스타일: 테두리만, 투명 배경 (우선순위 높임) ⭐️ */
         .register-button-area button {
             padding: 5px 10px; 
-            background-color: transparent; 
+            background-color: transparent !important; 
             color: #444; 
             border: 1px solid #c9b8a8; 
             border-radius: 15px; 
             font-size: 0.9em; 
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+            transition: border-color 0.2s, transform 0.1s;
             font-family: 'Gowun Dodum', sans-serif;
             box-shadow: none; 
             white-space: nowrap; 
         }
 
         .register-button-area button:hover {
-            background-color: rgba(201, 184, 168, 0.1); 
+            border-color: #645d55; 
             transform: translateY(-1px); 
         }
-
+        
+        /* ⭐️ ID별 색상 재정의 (투명 배경 강제 적용) ⭐️ */
+        #openRegisterModal {
+            background-color: transparent !important;
+            border: 1px solid #c9b8a8;
+        }
+        
         #openActionButton { 
-            background-color: transparent;
+            background-color: transparent !important;
             border: 1px solid #a8c9b8; 
             color: #333;
         }
         
         #openActionButton:hover {
-            background-color: rgba(168, 201, 184, 0.1);
+            border-color: #38705c; 
         }
 
 
@@ -361,7 +362,6 @@ function newColour() {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             text-align: left;
             
-            /* 배너 상자의 폭을 230px로 고정 (480px 컨테이너에 2개 배치 위함) */
             width: 230px; 
             max-width: 100%; 
             flex-shrink: 0; 
@@ -372,30 +372,20 @@ function newColour() {
             transition: border-color 0.3s, box-shadow 0.3s, transform 0.1s;
         }
         
-        /* ⭐️ 변경: 수정 모드 활성화 시 스타일 */
+        /* 수정 모드 활성화 시 스타일 */
         .entry.editable {
             cursor: pointer;
-            border: 2px solid #5cb85c; 
+            border: 2px solid #5cb85c; /* 초록색 테두리 */
             box-shadow: 0 0 8px rgba(92, 184, 92, 0.5);
-            /* animation: pulse 1.5s infinite; -> pulse 효과는 너무 산만해서 제거 */
         }
 
-        /* ⭐️ 추가: 선택된 배너 강조 */
+        /* 선택된 배너 강조 */
         .entry.selected {
              border: 2px solid #007bff; /* 파란색으로 선택 강조 */
              box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
              transform: scale(1.02);
         }
         
-        /* 이전 pulse 애니메이션 (현재 미사용)
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.01); opacity: 0.95; }
-            100% { transform: scale(1); opacity: 1; }
-        } */
-
-
-        /* 이름 위치 (배너 아래) */
         .entry-banner-area {
             text-align: center;
             padding: 5px 0 0 0; 
@@ -436,38 +426,19 @@ function newColour() {
             transform: scale(1.03);
         }
 
-        /* 모달 스타일 */
-
-        .modal {
-            display: none; 
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4); 
-            padding-top: 30px; /* ⭐️ 수정: 상단 여백 조절 */
-        }
-
-        .modal-content {
+        /* 패널 스타일 */
+        #registerPanel, #actionPanel {
             background-color: #fefefe;
-            /* margin: 5% auto; -> 삭제 */
-            margin: 30px auto; /* ⭐️ 수정: 위쪽 마진을 30px로 고정 (목록을 가리지 않기 위함) */
             padding: 20px;
-            border: 1px solid #888;
-            width: 80%; 
-            max-width: 400px;
+            border: 1px solid #ddd;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
             text-align: left;
-            /* ⭐️ 추가: 모달 내용의 최대 높이를 제한 */
-            max-height: 80vh; 
-            overflow-y: auto; 
+            display: none; /* 초기에는 숨김 */
         }
-
-        .modal-content h3 {
+        
+        #registerPanel h3, #actionPanel h3 {
             text-align: center;
             color: #645d55;
             margin-top: 0;
@@ -489,8 +460,8 @@ function newColour() {
             text-decoration: none;
             cursor: pointer;
         }
-
-        .modal-action-button {
+        
+        .action-panel-button {
             width: 100%;
             padding: 10px;
             margin-top: 10px;
@@ -589,30 +560,9 @@ function newColour() {
             <h2 class="sub-title">배너 방명록</h2>
         </div>
         
-        <h2 class="section-title">등록된 배너 목록</h2>
-        
-        <div class="register-button-area">
-            <button id="openRegisterModal" onclick="openRegisterModal()">✨ 내 배너 등록하기</button>
-            <button id="openActionButton" onclick="openCombinedActionModal()">🛠️ 수정/삭제하기</button>
-        </div>
-
-        <div id="entryListContainer">
-            <p style="text-align: center; color: #aaa; margin: 50px 0;">배너를 불러오는 중...</p>
-        </div>
-
-        <div class="footer">
-            <p style="margin-bottom: 3px;">©2025 bannermoa. All rights reserved.</p>
-            <p style="margin-top: 0;">
-                <a href="https://osunia.github.io/bannermoa/" target="home">메인 페이지로 돌아가기</a>
-            </p>
-        </div>
-    </div>
-
-    <div id="registerModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeRegisterModal()">&times;</span>
-            <h3 id="registerModalTitle">내 배너 등록하기</h3>
-            
+        <div id="registerPanel" style="display: none;">
+            <span class="close-btn" onclick="closeRegisterPanel()">&times;</span>
+            <h3>✨ 내 배너 등록하기</h3>
             <div id="registerForm">
                 <div class="form-group">
                     <label for="nameInput">닉네임/사이트 이름</label>
@@ -633,29 +583,25 @@ function newColour() {
                 <button id="submitEntry" class="modal-submit-button" onclick="addEntry()">등록하기</button>
             </div>
         </div>
-    </div>
-
-
-    <div id="actionModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h3 id="modalTitle"></h3>
+        
+        <div id="actionPanel" style="display: none;">
+            <span class="close-btn" onclick="closeActionPanel()">&times;</span>
+            <h3 id="panelTitle">🛠️ 수정 및 삭제</h3>
             
             <div id="passwordInputGroup">
                 <div class="form-group">
                     <label for="modalPasswordInput">수정/삭제 비밀번호 입력</label>
                     <input type="password" id="modalPasswordInput" placeholder="비밀번호" required>
                 </div>
-                <button id="checkPasswordButton" class="modal-action-button" onclick="checkPassword()">비밀번호 확인</button>
+                <button id="checkPasswordButton" class="action-panel-button" onclick="checkPassword()">비밀번호 확인</button>
             </div>
             
             <div id="selectActionGroup" style="display: none;">
                 <p style="text-align: center; color: #645d55;">수정/삭제할 배너를 목록에서 **직접 클릭**해 주세요.</p>
             </div>
 
-
             <div id="editFormGroup" style="display: none;">
-                <h4 style="text-align: center; color: #d9534f; margin-top: 0;" id="currentActionLabel">수정 또는 삭제 선택</h4>
+                <h4 style="text-align: center; color: #d9534f; margin-top: 0;" id="currentActionLabel">배너 정보 수정</h4>
                 <div class="form-group">
                     <label for="editHomeUrlInput">새 갠홈 주소</label>
                     <input type="url" id="editHomeUrlInput" placeholder="https://new-home.com" required>
@@ -664,10 +610,29 @@ function newColour() {
                     <label for="editBannerUrlInput">새 배너 이미지 주소</label>
                     <input type="url" id="editBannerUrlInput" placeholder="https://new-banner.png" required>
                 </div>
-                <button id="saveEditButton" class="modal-action-button" onclick="saveEdit()">수정 저장</button>
-                <button id="deleteEntryButton" class="modal-action-button" style="background-color: #d9534f; margin-top: 5px;" onclick="confirmDelete()">항목 삭제</button>
+                <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
+                <button id="deleteEntryButton" class="action-panel-button" style="background-color: #d9534f; margin-top: 5px;" onclick="confirmDelete()">항목 삭제</button>
             </div>
             <p id="modalError"></p>
+        </div>
+
+
+        <h2 class="section-title">등록된 배너 목록</h2>
+        
+        <div class="register-button-area">
+            <button id="openRegisterModal" onclick="openRegisterPanel()">✨ 내 배너 등록하기</button>
+            <button id="openActionButton" onclick="openCombinedActionPanel()">🛠️ 수정/삭제하기</button>
+        </div>
+
+        <div id="entryListContainer">
+            <p style="text-align: center; color: #aaa; margin: 50px 0;">배너를 불러오는 중...</p>
+        </div>
+
+        <div class="footer">
+            <p style="margin-bottom: 3px;">©2025 bannermoa. All rights reserved.</p>
+            <p style="margin-top: 0;">
+                <a href="https://osunia.github.io/bannermoa/" target="home">메인 페이지로 돌아가기</a>
+            </p>
         </div>
     </div>
 
@@ -697,7 +662,6 @@ function newColour() {
                 const response = await fetch(APPS_SCRIPT_URL, { method: 'GET' });
                 const result = await response.json();
                 
-                // 데이터는 항상 문자열로 저장되므로, 비밀번호 비교를 위해 변환 과정이 필요합니다.
                 allEntries = result.success 
                     ? (result.data || []).map(entry => ({ 
                         ...entry, 
@@ -764,7 +728,7 @@ function newColour() {
                 document.getElementById('passwordInput').value = '';
                 
                 alert('배너 항목이 성공적으로 등록되었습니다!');
-                closeRegisterModal(); // 등록 완료 후 모달 닫기
+                closeRegisterPanel(); // 패널 닫기
                 loadEntries(); 
             } else {
                 alert('등록 실패: ' + result.message);
@@ -775,12 +739,14 @@ function newColour() {
         }
 
         // ----------------------------------------------------
-        // 3. 렌더링 및 모달 관리 함수
+        // 3. 렌더링 및 패널 관리 함수
         // ----------------------------------------------------
         
         async function loadEntries() {
             const container = document.getElementById('entryListContainer');
-            container.innerHTML = `<p style="text-align: center; color: #aaa; margin: 50px 0;">배너를 불러오는 중...</p>`;
+            if (!document.getElementById('actionPanel').style.display || document.getElementById('actionPanel').style.display === 'none') {
+                container.innerHTML = `<p style="text-align: center; color: #aaa; margin: 50px 0;">배너를 불러오는 중...</p>`;
+            }
             
             const entries = await fetchEntriesFromSheet();
             renderEntries(entries);
@@ -788,7 +754,11 @@ function newColour() {
 
         function renderEntries(entries) {
             const container = document.getElementById('entryListContainer');
-            container.innerHTML = ''; 
+            if (container.innerHTML.includes('배너를 불러오는 중...')) {
+                container.innerHTML = ''; 
+            }
+            
+            container.innerHTML = '';
 
             if (!entries || entries.length === 0) {
                 container.innerHTML = `
@@ -805,22 +775,27 @@ function newColour() {
                 entryDiv.className = 'entry';
                 entryDiv.setAttribute('data-id', entry.id);
                 
-                // 항목 클릭 이벤트 리스너 추가 (수정/삭제 모드에서만 동작)
+                // 배너 박스 전체 클릭 시 수정/삭제 선택 (기존 로직 유지)
                 entryDiv.onclick = function() { 
-                    // 수정 모드가 활성화되어 있고, 비밀번호가 일치하는 항목만 클릭 가능
                     if (isEditingMode && entry.password === currentPassword) {
                         selectEntryToEdit(entry.id);
                     }
                 };
 
                 const bannerImg = `<img src="${entry.bannerUrl}" class="entry-banner" alt="배너 이미지" onerror="this.src='https://i.imgur.com/rN5F2yS.png'; this.onerror=null;">`; 
-
                 const nameHtml = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; color: inherit;">${entry.name}</a>`;
+
+                // 수정/삭제 모드일 때 링크 태그 동작을 막는 로직 추가 
+                let linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;">`;
+                if (isEditingMode && entry.password === currentPassword) {
+                     // 수정/삭제 모드이고 해당 배너의 비밀번호가 일치하면 링크 이동을 막고 선택 이벤트로 대체
+                    linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;" onclick="event.preventDefault(); selectEntryToEdit(${entry.id});">`;
+                }
 
 
                 entryDiv.innerHTML = `
                     <div class="entry-banner-area">
-                        <a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;">
+                        ${linkTagStart}
                             ${bannerImg}
                         </a>
                     </div>
@@ -833,39 +808,41 @@ function newColour() {
 
                 container.appendChild(entryDiv);
                 
-                // 수정/삭제 모드일 때, 비밀번호가 일치하는 항목에 'editable' 클래스 추가
                 if (isEditingMode && entry.password === currentPassword) {
                     entryDiv.classList.add('editable');
                 }
                 
-                // 선택된 항목이 있을 경우 'selected' 클래스 추가
                 if (isEditingMode && currentEntryId && String(entry.id) === String(currentEntryId)) {
                     entryDiv.classList.add('selected');
                 }
             });
         }
         
-        // 등록 모달 함수 (유지)
-        function openRegisterModal() {
-            document.getElementById('registerModal').style.display = 'block';
+        // 등록 패널 열기/닫기
+        function openRegisterPanel() {
+            closeActionPanel(); 
+            document.getElementById('registerPanel').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
         
-        function closeRegisterModal() {
-            document.getElementById('registerModal').style.display = 'none';
+        function closeRegisterPanel() {
+            document.getElementById('registerPanel').style.display = 'none';
         }
 
         // ----------------------------------------------------
-        // 4. 통합 수정/삭제 모드 함수
+        // 4. 통합 수정/삭제 패널 함수 
         // ----------------------------------------------------
         
-        function openCombinedActionModal() {
+        function openCombinedActionPanel() {
+            closeRegisterPanel(); 
+            
             // 초기화
             currentEntryId = null;
             currentPassword = null;
             isEditingMode = false; 
             
-            const modal = document.getElementById('actionModal');
-            document.getElementById('modalTitle').innerText = '배너 수정 및 삭제';
+            const actionPanel = document.getElementById('actionPanel');
+            document.getElementById('panelTitle').innerText = '🛠️ 수정 및 삭제';
             document.getElementById('modalPasswordInput').value = '';
             document.getElementById('modalError').innerText = '';
 
@@ -874,22 +851,22 @@ function newColour() {
             document.getElementById('selectActionGroup').style.display = 'none';
             document.getElementById('editFormGroup').style.display = 'none';
 
-            modal.style.display = 'block';
-            // 모드 비활성화 상태에서 목록을 깨끗하게 다시 그립니다.
+            actionPanel.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            
             loadEntries();
         }
 
-        function closeModal() {
-            document.getElementById('actionModal').style.display = 'none';
+        function closeActionPanel() {
+            document.getElementById('actionPanel').style.display = 'none';
             document.getElementById('editFormGroup').style.display = 'none';
             document.getElementById('modalError').innerText = '';
             document.getElementById('modalPasswordInput').value = '';
             
             currentEntryId = null;
             currentPassword = null;
-            isEditingMode = false; // 모드 비활성화
+            isEditingMode = false; 
 
-            // 'editable', 'selected' 클래스 제거 및 항목 리로드
             loadEntries(); 
         }
 
@@ -902,7 +879,6 @@ function newColour() {
                 return;
             }
             
-            // 비밀번호 일치 여부 확인 (클라이언트 데이터는 이미 trim 되어 있음)
             const isMatch = allEntries.some(e => e.password === password);
 
             if (!isMatch) {
@@ -914,17 +890,13 @@ function newColour() {
             currentPassword = password;
             isEditingMode = true;
             
-            // ⭐️⭐️ 수정: 모달 내부 요소를 변경하여 항목 선택 모드로 전환 (모달은 닫지 않음) ⭐️⭐️
-            document.getElementById('modalTitle').innerText = '🛠️ 수정/삭제할 배너를 클릭해 주세요';
+            document.getElementById('panelTitle').innerText = '클릭: 수정/삭제할 배너 선택';
             document.getElementById('passwordInputGroup').style.display = 'none'; 
             document.getElementById('selectActionGroup').style.display = 'block'; 
             errorMsg.innerText = '목록에서 초록색으로 표시된 배너를 클릭해 주세요.';
 
-            // 목록을 다시 렌더링하여 'editable' 항목 표시
+            // 목록을 다시 렌더링하여 'editable' 항목 표시 및 링크 동작 변경
             renderEntries(allEntries); 
-            
-            // 스크롤을 맨 위로 이동하여 사용자가 목록을 바로 볼 수 있도록 안내
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function selectEntryToEdit(id) {
@@ -933,7 +905,7 @@ function newColour() {
             const entry = allEntries.find(e => String(e.id) === String(id));
             
             // 3단계: 수정/삭제 폼 표시
-            document.getElementById('modalTitle').innerText = `'${entry.name}' 수정/삭제`;
+            document.getElementById('panelTitle').innerText = `'${entry.name}' 수정/삭제`;
             document.getElementById('selectActionGroup').style.display = 'none';
             document.getElementById('editFormGroup').style.display = 'block';
             document.getElementById('modalError').innerText = '';
@@ -942,7 +914,6 @@ function newColour() {
             document.getElementById('editHomeUrlInput').value = entry.homeUrl;
             document.getElementById('editBannerUrlInput').value = entry.bannerUrl;
             
-            // ⭐️ 추가: 목록을 다시 렌더링하여 현재 선택된 항목에 'selected' 클래스 추가
             renderEntries(allEntries);
         }
 
@@ -957,10 +928,15 @@ function newColour() {
                 alert('홈 주소와 배너 이미지 주소는 필수 입력 항목입니다.');
                 return;
             }
+            
+            const saveButton = document.getElementById('saveEditButton');
+            saveButton.disabled = true;
+            saveButton.innerText = '저장 중...';
+
 
             const dataToSend = {
                 id: currentEntryId,
-                password: currentPassword, // 저장된 비밀번호 사용
+                password: currentPassword, 
                 homeUrl: newHomeUrl,
                 bannerUrl: newBannerUrl
             };
@@ -968,12 +944,14 @@ function newColour() {
             const result = await sendDataToSheet(dataToSend, 'PUT'); 
 
             if (result.success) {
-                // 수정 후 모달 닫고 목록 새로고침
-                closeModal();
+                closeActionPanel();
                 alert('배너 정보가 성공적으로 수정되었습니다.');
             } else {
                 alert('수정 실패: ' + result.message);
             }
+            
+            saveButton.disabled = false;
+            saveButton.innerText = '수정 저장';
         }
         
         function confirmDelete() {
@@ -984,20 +962,26 @@ function newColour() {
         }
 
         async function deleteEntry() {
+            const deleteButton = document.getElementById('deleteEntryButton');
+            deleteButton.disabled = true;
+            deleteButton.innerText = '삭제 중...';
+
             const dataToSend = {
                 id: currentEntryId,
-                password: currentPassword // 저장된 비밀번호 사용
+                password: currentPassword 
             };
 
             const result = await sendDataToSheet(dataToSend, 'DELETE');
 
             if (result.success) {
-                // 삭제 후 모달 닫고 목록 새로고침
-                closeModal();
+                closeActionPanel();
                 alert('등록 항목이 성공적으로 삭제되었습니다.');
             } else {
                 alert('삭제 실패: ' + result.message);
             }
+            
+            deleteButton.disabled = false;
+            deleteButton.innerText = '항목 삭제';
         }
     </script>
 </body>
