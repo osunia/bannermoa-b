@@ -276,6 +276,11 @@ function newColour() {
                 -1px 1px 0 #fff,
                 1px 1px 0 #fff;
         }
+        
+        /* ⭐️ 변경 사항: 이모지 전용 스타일 추가 (제목 크기 2.2em의 85%로 조정) ⭐️ */
+        .emoji-small {
+            font-size: 0.85em; 
+        }
 
         .sub-title {
             color: #333;
@@ -307,7 +312,7 @@ function newColour() {
             gap: 5px; 
         }
 
-        /* ⭐️ 버튼 기본 스타일: 테두리만, 투명 배경 (우선순위 높임) ⭐️ */
+        /* 버튼 기본 스타일: 테두리만, 투명 배경 */
         .register-button-area button {
             padding: 5px 10px; 
             background-color: transparent !important; 
@@ -327,7 +332,7 @@ function newColour() {
             transform: translateY(-1px); 
         }
         
-        /* ⭐️ ID별 색상 재정의 (투명 배경 강제 적용) ⭐️ */
+        /* ID별 색상 재정의 (투명 배경 강제 적용) */
         #openRegisterModal {
             background-color: transparent !important;
             border: 1px solid #c9b8a8;
@@ -556,7 +561,7 @@ function newColour() {
     <div class="container">
 
         <div class="header-area">
-            <h1 class="main-title"><span class="emoji">🌰</span>배너모아<span class="emoji">🐿️</span></h1>
+            <h1 class="main-title"><span class="emoji-small">🌰</span>배너모아<span class="emoji-small">🐿️</span></h1>
             <h2 class="sub-title">배너 방명록</h2>
         </div>
         
