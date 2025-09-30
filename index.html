@@ -361,7 +361,7 @@ function newColour() {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             text-align: left;
             
-            /* ⭐️⭐️ 수정: 배너 상자의 폭을 230px로 고정 (480px 컨테이너에 2개 배치 위함) ⭐️⭐️ */
+            /* 배너 상자의 폭을 230px로 고정 (480px 컨테이너에 2개 배치 위함) */
             width: 230px; 
             max-width: 100%; 
             flex-shrink: 0; 
@@ -369,20 +369,30 @@ function newColour() {
 
             box-sizing: border-box;
             position: relative; 
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.1s;
         }
         
+        /* ⭐️ 변경: 수정 모드 활성화 시 스타일 */
         .entry.editable {
             cursor: pointer;
             border: 2px solid #5cb85c; 
             box-shadow: 0 0 8px rgba(92, 184, 92, 0.5);
-            animation: pulse 1.5s infinite;
+            /* animation: pulse 1.5s infinite; -> pulse 효과는 너무 산만해서 제거 */
+        }
+
+        /* ⭐️ 추가: 선택된 배너 강조 */
+        .entry.selected {
+             border: 2px solid #007bff; /* 파란색으로 선택 강조 */
+             box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+             transform: scale(1.02);
         }
         
+        /* 이전 pulse 애니메이션 (현재 미사용)
         @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.01); opacity: 0.95; }
             100% { transform: scale(1); opacity: 1; }
-        }
+        } */
 
 
         /* 이름 위치 (배너 아래) */
@@ -426,7 +436,7 @@ function newColour() {
             transform: scale(1.03);
         }
 
-        /* 모달 스타일 이하 (이전과 동일) */
+        /* 모달 스타일 */
 
         .modal {
             display: none; 
@@ -438,12 +448,13 @@ function newColour() {
             height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.4); 
-            padding-top: 60px;
+            padding-top: 30px; /* ⭐️ 수정: 상단 여백 조절 */
         }
 
         .modal-content {
             background-color: #fefefe;
-            margin: 5% auto;
+            /* margin: 5% auto; -> 삭제 */
+            margin: 30px auto; /* ⭐️ 수정: 위쪽 마진을 30px로 고정 (목록을 가리지 않기 위함) */
             padding: 20px;
             border: 1px solid #888;
             width: 80%; 
@@ -451,6 +462,9 @@ function newColour() {
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: left;
+            /* ⭐️ 추가: 모달 내용의 최대 높이를 제한 */
+            max-height: 80vh; 
+            overflow-y: auto; 
         }
 
         .modal-content h3 {
@@ -519,7 +533,7 @@ function newColour() {
             text-decoration: underline;
         }
 
-        /* 폼 요소 스타일 (재사용) */
+        /* 폼 요소 스타일 */
 
         .form-group {
             margin-bottom: 15px;
@@ -636,12 +650,12 @@ function newColour() {
             </div>
             
             <div id="selectActionGroup" style="display: none;">
-                <p style="text-align: center; color: #645d55;">수정/삭제할 배너를 목록에서 선택해 주세요.</p>
+                <p style="text-align: center; color: #645d55;">수정/삭제할 배너를 목록에서 **직접 클릭**해 주세요.</p>
             </div>
 
 
             <div id="editFormGroup" style="display: none;">
-                <h4 style="text-align: center; color: #d9534f;" id="currentActionLabel">수정 또는 삭제 선택</h4>
+                <h4 style="text-align: center; color: #d9534f; margin-top: 0;" id="currentActionLabel">수정 또는 삭제 선택</h4>
                 <div class="form-group">
                     <label for="editHomeUrlInput">새 갠홈 주소</label>
                     <input type="url" id="editHomeUrlInput" placeholder="https://new-home.com" required>
@@ -658,13 +672,13 @@ function newColour() {
     </div>
 
     <script>
-        // ⭐️⭐️ Apps Script URL 수정 완료 ⭐️⭐️
+        // ⭐️ Apps Script URL을 다시 한번 확인하고 붙여넣어주세요 ⭐️
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3KcdUSlnmg0cv1ktCxiHJJChg3uknhA3rG5LgBcxPi45wkgRZyC1jAf0O_8h8a1kl/exec"; 
 
         window.onload = function() {
             document.querySelector('.container').classList.add('loaded');
             if (!isMobile()) {
-                initializeSparkles();  
+                initializeSparkles(); 
             }
             loadEntries(); // 서버에서 데이터 불러오기
         };
@@ -675,7 +689,7 @@ function newColour() {
         let allEntries = []; 
 
         // ----------------------------------------------------
-        // 1. 데이터 통신 함수 (Apps Script API와 통신)
+        // 1. 데이터 통신 함수
         // ----------------------------------------------------
 
         async function fetchEntriesFromSheet() {
@@ -683,7 +697,13 @@ function newColour() {
                 const response = await fetch(APPS_SCRIPT_URL, { method: 'GET' });
                 const result = await response.json();
                 
-                allEntries = result.success ? (result.data || []) : (console.error("데이터 로드 실패:", result.message), []);
+                // 데이터는 항상 문자열로 저장되므로, 비밀번호 비교를 위해 변환 과정이 필요합니다.
+                allEntries = result.success 
+                    ? (result.data || []).map(entry => ({ 
+                        ...entry, 
+                        password: String(entry.password).trim() 
+                      })) 
+                    : (console.error("데이터 로드 실패:", result.message), []);
                 
                 return allEntries;
             } catch (error) {
@@ -708,7 +728,7 @@ function newColour() {
         }
 
         // ----------------------------------------------------
-        // 2. 항목 추가/등록 (이전과 동일)
+        // 2. 항목 추가/등록
         // ----------------------------------------------------
 
         async function addEntry() {
@@ -787,7 +807,8 @@ function newColour() {
                 
                 // 항목 클릭 이벤트 리스너 추가 (수정/삭제 모드에서만 동작)
                 entryDiv.onclick = function() { 
-                    if (isEditingMode) {
+                    // 수정 모드가 활성화되어 있고, 비밀번호가 일치하는 항목만 클릭 가능
+                    if (isEditingMode && entry.password === currentPassword) {
                         selectEntryToEdit(entry.id);
                     }
                 };
@@ -816,6 +837,11 @@ function newColour() {
                 if (isEditingMode && entry.password === currentPassword) {
                     entryDiv.classList.add('editable');
                 }
+                
+                // 선택된 항목이 있을 경우 'selected' 클래스 추가
+                if (isEditingMode && currentEntryId && String(entry.id) === String(currentEntryId)) {
+                    entryDiv.classList.add('selected');
+                }
             });
         }
         
@@ -829,14 +855,14 @@ function newColour() {
         }
 
         // ----------------------------------------------------
-        // 4. 통합 수정/삭제 모드 함수 (이전과 동일)
+        // 4. 통합 수정/삭제 모드 함수
         // ----------------------------------------------------
         
         function openCombinedActionModal() {
             // 초기화
             currentEntryId = null;
             currentPassword = null;
-            isEditingMode = false;
+            isEditingMode = false; 
             
             const modal = document.getElementById('actionModal');
             document.getElementById('modalTitle').innerText = '배너 수정 및 삭제';
@@ -849,6 +875,8 @@ function newColour() {
             document.getElementById('editFormGroup').style.display = 'none';
 
             modal.style.display = 'block';
+            // 모드 비활성화 상태에서 목록을 깨끗하게 다시 그립니다.
+            loadEntries();
         }
 
         function closeModal() {
@@ -861,7 +889,7 @@ function newColour() {
             currentPassword = null;
             isEditingMode = false; // 모드 비활성화
 
-            // 'editable' 클래스 제거 및 항목 리로드
+            // 'editable', 'selected' 클래스 제거 및 항목 리로드
             loadEntries(); 
         }
 
@@ -874,7 +902,7 @@ function newColour() {
                 return;
             }
             
-            // 비밀번호 일치 여부 확인 (최소 1개 항목이라도 일치하는지)
+            // 비밀번호 일치 여부 확인 (클라이언트 데이터는 이미 trim 되어 있음)
             const isMatch = allEntries.some(e => e.password === password);
 
             if (!isMatch) {
@@ -886,19 +914,23 @@ function newColour() {
             currentPassword = password;
             isEditingMode = true;
             
-            document.getElementById('modalTitle').innerText = '🛠️ 수정/삭제할 배너 선택';
-            document.getElementById('passwordInputGroup').style.display = 'none';
-            document.getElementById('selectActionGroup').style.display = 'block';
+            // ⭐️⭐️ 수정: 모달 내부 요소를 변경하여 항목 선택 모드로 전환 (모달은 닫지 않음) ⭐️⭐️
+            document.getElementById('modalTitle').innerText = '🛠️ 수정/삭제할 배너를 클릭해 주세요';
+            document.getElementById('passwordInputGroup').style.display = 'none'; 
+            document.getElementById('selectActionGroup').style.display = 'block'; 
             errorMsg.innerText = '목록에서 초록색으로 표시된 배너를 클릭해 주세요.';
 
             // 목록을 다시 렌더링하여 'editable' 항목 표시
             renderEntries(allEntries); 
+            
+            // 스크롤을 맨 위로 이동하여 사용자가 목록을 바로 볼 수 있도록 안내
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function selectEntryToEdit(id) {
             currentEntryId = id;
             
-            const entry = allEntries.find(e => e.id.toString() === id.toString());
+            const entry = allEntries.find(e => String(e.id) === String(id));
             
             // 3단계: 수정/삭제 폼 표시
             document.getElementById('modalTitle').innerText = `'${entry.name}' 수정/삭제`;
@@ -909,10 +941,13 @@ function newColour() {
             // 기존 데이터 채우기
             document.getElementById('editHomeUrlInput').value = entry.homeUrl;
             document.getElementById('editBannerUrlInput').value = entry.bannerUrl;
+            
+            // ⭐️ 추가: 목록을 다시 렌더링하여 현재 선택된 항목에 'selected' 클래스 추가
+            renderEntries(allEntries);
         }
 
 
-        // 4. 수정 및 삭제 처리 (이전 로직 재활용)
+        // 4. 수정 및 삭제 처리
         
         async function saveEdit() {
             const newHomeUrl = document.getElementById('editHomeUrlInput').value.trim();
@@ -933,7 +968,7 @@ function newColour() {
             const result = await sendDataToSheet(dataToSend, 'PUT'); 
 
             if (result.success) {
-                loadEntries();
+                // 수정 후 모달 닫고 목록 새로고침
                 closeModal();
                 alert('배너 정보가 성공적으로 수정되었습니다.');
             } else {
@@ -957,7 +992,7 @@ function newColour() {
             const result = await sendDataToSheet(dataToSend, 'DELETE');
 
             if (result.success) {
-                loadEntries();
+                // 삭제 후 모달 닫고 목록 새로고침
                 closeModal();
                 alert('등록 항목이 성공적으로 삭제되었습니다.');
             } else {
