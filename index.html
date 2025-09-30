@@ -245,9 +245,9 @@ function newColour() {
             font-size: 0.95em;
         }
 
-        /* PC에서 전체 컨테이너 폭 확장 (배너가 나란히 놓일 공간 확보) */
+        /* 메인 페이지 너비에 맞게 최대 너비 480px로 변경 */
         .container {
-            max-width: 1000px; 
+            max-width: 480px; 
             margin: 0 auto;
             padding: 25px;
             background-color: #fff;
@@ -343,15 +343,13 @@ function newColour() {
         }
 
 
-        /* ----------------------- */
         /* 배너 목록 컨테이너 */
-        /* ----------------------- */
         #entryListContainer {
             margin-top: 15px;
             display: flex; 
             flex-wrap: wrap; 
-            justify-content: center; /* 항목을 중앙으로 모으기 */
-            gap: 10px 10px; /* 세로/가로 간격을 10px로 축소 */
+            justify-content: center; 
+            gap: 10px 10px; 
         }
 
         .entry {
@@ -363,11 +361,11 @@ function newColour() {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             text-align: left;
             
-            /* ⭐️⭐️ 수정: 배너 상자의 폭을 250px로 고정 ⭐️⭐️ */
-            width: 250px; 
-            max-width: 100%; /* 모바일에서 250px이 화면보다 클 경우 대비 */
-            flex-shrink: 0; /* 폭이 줄어들지 않도록 설정 */
-            flex-grow: 0; /* 폭이 늘어나지 않도록 설정 */
+            /* ⭐️⭐️ 수정: 배너 상자의 폭을 230px로 고정 (480px 컨테이너에 2개 배치 위함) ⭐️⭐️ */
+            width: 230px; 
+            max-width: 100%; 
+            flex-shrink: 0; 
+            flex-grow: 0; 
 
             box-sizing: border-box;
             position: relative; 
@@ -387,23 +385,17 @@ function newColour() {
         }
 
 
-        /* ----------------------- */
-        /* 1. 이름 위치 (배너 아래) */
-        /* ----------------------- */
+        /* 이름 위치 (배너 아래) */
         .entry-banner-area {
             text-align: center;
-            padding: 5px 0 0 0; /* 이름과의 간격만 남기고 상하 패딩 축소 */
+            padding: 5px 0 0 0; 
         }
         
-        /* ⭐️⭐️ 이름 컨테이너는 이제 배너 아래에 위치하도록 렌더링 순서를 조정하고, 
-             CSS는 중앙 정렬만 유지합니다. ⭐️⭐️ */
         .entry-header {
             display: block; 
             text-align: center; 
-            margin-bottom: 0; /* 배너-이름 간격은 0으로 설정 (entry-name에서 조정) */
+            margin-bottom: 0; 
             padding-bottom: 0; 
-            /* 렌더링 순서를 위해 HTML에서 entry-header를 entry-banner-area 뒤로 옮겨야 합니다. 
-               (JS renderEntries 함수에서 순서 변경함) */
         }
 
         .entry-name {
@@ -411,7 +403,7 @@ function newColour() {
             font-weight: bold;
             color: #645d55;
             display: block; 
-            padding-top: 5px; /* 배너와 이름 사이의 간격 */
+            padding-top: 5px; 
             padding-bottom: 0; 
         }
         
@@ -666,8 +658,8 @@ function newColour() {
     </div>
 
     <script>
-        // 이 URL은 Google Apps Script 웹앱 배포 URL입니다.
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3KcdUSlnmg0cv1ktCxiHJJChg3uknhA3rG5LgBcxPi45wkgRZyC1jAf0O_8h8a1kl/exec";
+        // ⭐️⭐️ Apps Script URL 수정 완료 ⭐️⭐️
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3KcdUSlnmg0cv1ktCxiHJJChg3uknhA3rG5LgBcxPi45wkgRZyC1jAf0O_8h8a1kl/exec"; 
 
         window.onload = function() {
             document.querySelector('.container').classList.add('loaded');
