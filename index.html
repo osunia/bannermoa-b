@@ -63,6 +63,7 @@ function initializeSparkles() {
     if (!isMobile()) {
         document.onmousemove=mouse;
         window.addEventListener('scroll', scrollMove, { passive: true });
+        window.addEventListener('resize', set_width); // 리사이즈 이벤트 추가
     }
 })();
 
@@ -95,7 +96,8 @@ function update_star(i) {
     if (starv[i]) {
         stary[i]+=1+Math.random()*3;
         starx[i]+=(i%5-2)/5;
-        if (stary[i]<shigh+sdown) {
+        // ⭐️ 수정: shigh+sdown 대신 shigh만 사용 (shigh가 이제 문서 전체 높이)
+        if (stary[i]<shigh) { 
             star[i].style.top=stary[i]+"px";
             star[i].style.left=starx[i]+"px";
         }
@@ -125,7 +127,8 @@ function update_tiny(i) {
     if (tinyv[i]) {
         tinyy[i]+=1+Math.random()*3;
         tinyx[i]+=(i%5-2)/5;
-        if (tinyy[i]<shigh+sdown) {
+        // ⭐️ 수정: shigh+sdown 대신 shigh만 사용 (shigh가 이제 문서 전체 높이)
+        if (tinyy[i]<shigh) { 
             tiny[i].style.top=tinyy[i]+"px";
             tiny[i].style.left=tinyx[i]+"px";
         }
@@ -151,8 +154,9 @@ function scrollMove() {
     if (now - last_scroll_time < 100) return; 
     last_scroll_time = now;
     set_scroll(); 
+    // 마우스가 움직이지 않아도 스크롤 시 파티클 생성 위치를 중앙으로 재설정하여 깜빡임을 방지 (이전과 동일)
     x = sleft + swide / 2;
-    y = sdown + shigh / 2;
+    y = sdown + shigh / 2; // shigh가 이제 전체 문서 높이이므로, y 좌표 계산 방식에 주의가 필요할 수 있으나, scrollMove의 목적 상 그대로 유지
     ox = -1; 
     oy = -1;
     is_active = true;
@@ -177,12 +181,15 @@ function set_scroll() {
         sdown=0;
         sleft=0;
     }
+    set_width(); // 스크롤 시에도 너비/높이 갱신
 }
 
-window.onresize=set_width;
+// ⭐️ set_width() 함수 수정 ⭐️
 function set_width() {
     var sw_min=999999;
     var sh_min=999999;
+    
+    // 1. 뷰포트 너비/높이 계산 (sw_min, sh_min은 뷰포트 크기)
     if (document.documentElement && document.documentElement.clientWidth) {
         if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
         if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
@@ -199,9 +206,21 @@ function set_width() {
         sw_min=800;
         sh_min=600;
     }
-    swide=sw_min;
-    shigh=sh_min;
+    swide=sw_min; // 너비는 뷰포트로 유지
+    
+    // 2. ⭐️ 중요 수정: shigh를 문서 전체 높이로 설정 ⭐️
+    var doc_height = Math.max(
+        document.body.scrollHeight, 
+        document.documentElement.scrollHeight, 
+        document.body.offsetHeight, 
+        document.documentElement.offsetHeight,
+        document.documentElement.clientHeight // 최소 뷰포트 높이
+    );
+    
+    // 전체 문서 높이 또는 최소한 현재 뷰포트 높이를 shigh로 사용
+    shigh = doc_height;
 }
+
 
 function createDiv(height, width) {
     var div=document.createElement("div");
@@ -855,7 +874,6 @@ function newColour() {
                 
                 const bannerImg = `<img src="${entry.bannerUrl}" class="entry-banner" alt="배너 이미지" onerror="this.src='https://i.imgur.com/rN5F2yS.png'; this.onerror=null;">`; 
                 
-                // ⭐️ 수정: isEditingMode에 따라 nameHtml을 다르게 구성 ⭐️
                 let nameHtml;
                 let linkTagStart;
                 
@@ -884,15 +902,15 @@ function newColour() {
                     </div>
                 `;
                 
-                // ⭐️ 추가: isEditingMode일 때, 이름 텍스트 자체를 클릭하면 수정 모달을 띄우도록 이벤트 추가 ⭐️
+                // isEditingMode일 때, 이름 텍스트 자체를 클릭하면 수정 모달을 띄우도록 이벤트 추가 
                 if (isEditingMode) {
                      const nameElement = entryDiv.querySelector('.entry-name');
                      if (nameElement) {
                          nameElement.onclick = function(e) {
-                             e.stopPropagation(); // 이름 텍스트 클릭 시, 부모 div의 클릭 이벤트 중복 방지 (선택적으로)
+                             e.stopPropagation(); 
                              openPasswordCheckModal(entry.id);
                          };
-                         nameElement.style.cursor = 'pointer'; // 클릭 가능함을 시각적으로 보여줌
+                         nameElement.style.cursor = 'pointer'; 
                      }
                  }
 
