@@ -322,16 +322,16 @@ function newColour() {
             transform: translateY(-1px); 
         }
         
-        /* ⭐️ 변경: 등록/수정 버튼 색상 통일 ⭐️ */
+        /* ID별 색상 재정의 */
         #openRegisterModal {
             background-color: transparent !important;
-            border: 1px solid #ab9172; /* 변경 */
+            border: 1px solid #ab9172; 
         }
         
         #openActionButton { 
             background-color: transparent !important;
-            border: 1px solid #ab9172; /* 변경 */
-            color: #444; /* 글자색은 유지 */
+            border: 1px solid #ab9172; 
+            color: #444; 
         }
         
         /* 수정 모드 취소 버튼 스타일 */
@@ -486,28 +486,52 @@ function newColour() {
             cursor: pointer;
         }
         
+        /* ⭐️ 추가: 수정/삭제 버튼 그룹 컨테이너 ⭐️ */
+        .action-button-group {
+            display: flex;
+            gap: 10px; /* 버튼 사이 간격 */
+            margin-top: 10px; /* 폼 아래 여백 */
+        }
+        
         .action-panel-button {
-            width: 100%;
+            width: 50%; /* ⭐️ 변경: 가로 배치 위해 50%로 설정 ⭐️ */
             padding: 10px;
-            margin-top: 10px;
+            /* margin-top: 10px; -> action-button-group의 margin-top으로 대체 */
+            margin: 0; /* 개별 마진 제거 */
             font-family: 'Gowun Dodum', sans-serif;
             border: none;
-            border-radius: 4px;
+            border-radius: 4px; /* 모서리 둥글기 유지 */
             cursor: pointer;
             color: white;
             font-size: 1em;
+            flex-grow: 1; /* 가로 배치 시 버튼 균등하게 늘어나도록 설정 */
         }
 
-        /* ⭐️ 변경: 비밀번호 확인 버튼 색상 통일 ⭐️ */
         #checkPasswordButton {
+            width: 100%; /* 이 버튼은 단독으로 쓰이므로 100% 유지 */
             background-color: #ab9172; 
         }
         #checkPasswordButton:hover {
-            background-color: #927c65; /* 호버 색상 추가 */
+            background-color: #927c65; 
         }
         
         #saveEditButton {
             background-color: #5cb85c;
+        }
+        #saveEditButton:hover:not(:disabled) {
+            background-color: #4cae4c;
+        }
+        
+        #deleteEntryButton {
+            background-color: #d9534f;
+        }
+        #deleteEntryButton:hover:not(:disabled) {
+             background-color: #c9302c;
+        }
+        
+        /* 수정/삭제 버튼 그룹에 의해 불필요해진 스타일 제거 */
+        #deleteEntryButton { 
+            /* margin-top: 5px; -> action-button-group에 의해 제거됨 */
         }
         
         #modalError {
@@ -556,7 +580,6 @@ function newColour() {
             font-size: 0.9em;
         }
 
-        /* ⭐️ 변경: 등록하기 버튼 색상 통일 ⭐️ */
         button.modal-submit-button { 
             width: 100%;
             padding: 12px;
@@ -572,7 +595,7 @@ function newColour() {
         }
 
         button.modal-submit-button:hover:not(:disabled) {
-            background-color: #927c65; /* 호버 색상 추가 */
+            background-color: #927c65; 
         }
         
         button.modal-submit-button:disabled {
@@ -642,8 +665,11 @@ function newColour() {
                     <label for="editBannerUrlInput">새 배너 이미지 주소</label>
                     <input type="url" id="editBannerUrlInput" placeholder="https://new-banner.png" required>
                 </div>
-                <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
-                <button id="deleteEntryButton" class="action-panel-button" style="background-color: #d9534f; margin-top: 5px;" onclick="confirmDelete()">항목 삭제</button>
+                
+                <div class="action-button-group">
+                    <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
+                    <button id="deleteEntryButton" class="action-panel-button" onclick="confirmDelete()">항목 삭제</button>
+                </div>
             </div>
         </div>
 
@@ -897,7 +923,7 @@ function newColour() {
             
             document.getElementById('modalError').innerText = '';
             
-            // ⭐️ 핵심 수정: 모드 활성화 시에도 컨테이너 비우기 ⭐️
+            // 핵심: 모드 활성화 시에도 컨테이너 비우고 렌더링
             entryListContainer.innerHTML = '';
             renderEntries(allEntries); 
         }
@@ -944,7 +970,7 @@ function newColour() {
             document.getElementById('passwordCheckTarget').innerText = `'${entry.name}' 항목의 비밀번호를 입력해주세요.`;
             document.getElementById('passwordCheckModal').style.display = 'block';
             
-            // ⭐️ 핵심 수정: 비밀번호 확인 모달이 열릴 때도 컨테이너 비우고 렌더링 ⭐️
+            // 비밀번호 확인 모달이 열릴 때도 컨테이너 비우고 렌더링
             entryListContainer.innerHTML = '';
             renderEntries(allEntries); 
             
