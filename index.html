@@ -334,16 +334,15 @@ function newColour() {
             color: #333;
         }
         
-        /* ⭐️ 변경: 수정 모드 취소 버튼 스타일 ⭐️ */
+        /* 수정 모드 취소 버튼 스타일 */
         #openActionButton.cancel-mode {
-            border-color: #d9534f; /* 빨간색 계열 */
+            border-color: #d9534f; 
             color: #d9534f;
             font-weight: bold;
         }
         #openActionButton.cancel-mode:hover {
             border-color: #ac2925; 
         }
-        /* -------------------------------------- */
 
 
         /* 배너 목록 컨테이너 */
@@ -374,15 +373,15 @@ function newColour() {
             transition: border-color 0.3s, box-shadow 0.3s, transform 0.1s;
         }
         
-        /* ⭐️ 변경: 수정 모드 활성화 시 스타일 - 모든 항목에 적용 ⭐️ */
+        /* 수정 모드 활성화 시 스타일 - 모든 항목에 적용 */
         .editing-mode .entry {
-            border: 2px solid #38705c; /* 초록색 테두리 */
+            border: 2px solid #38705c; 
             cursor: pointer;
         }
 
         /* 선택된 배너 강조 */
         .editing-mode .entry.selected {
-             border: 2px solid #007bff; /* 파란색으로 선택 강조 */
+             border: 2px solid #007bff; 
              box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
              transform: scale(1.02);
         }
@@ -502,17 +501,17 @@ function newColour() {
             color: #777;
             text-align: center; 
         }
-        
-        /* ⭐️ 변경된 부분: style 속성의 text-decoration: none; 제거 및 CSS 적용 ⭐️ */
+
+        /* ⭐️ 변경된 부분: 평소에 밑줄 없애기 ⭐️ */
         .footer a {
             color: #777;
-            /* text-decoration: none; 이 부분을 아래 JavaScript에서 처리하여 CSS hover가 작동하도록 합니다. */
+            text-decoration: none; 
         }
 
+        /* ⭐️ 변경된 부분: 호버 시에만 밑줄 나타나게 하기 ⭐️ */
         .footer a:hover {
             text-decoration: underline; 
         }
-        /* ------------------------------------ */
 
         /* 폼 요소 스타일 */
 
@@ -666,7 +665,7 @@ function newColour() {
         let currentPassword = null; 
         let isEditingMode = false; 
         let allEntries = []; 
-        const openActionButton = document.getElementById('openActionButton'); // 버튼 요소 가져오기
+        const openActionButton = document.getElementById('openActionButton'); 
 
         // ----------------------------------------------------
         // 1. 데이터 통신 함수 (이전과 동일)
@@ -766,6 +765,7 @@ function newColour() {
             entries.reverse(); 
             
             renderEntries(entries);
+            // ⭐️ 비활성화 해제는 closeActionPanel에서 처리되므로 여기서는 제거합니다. ⭐️
         }
 
         function renderEntries(entries) {
@@ -786,17 +786,15 @@ function newColour() {
             const containerDiv = document.querySelector('.container');
             if (isEditingMode) {
                 containerDiv.classList.add('editing-mode');
-                // ⭐️ 버튼 텍스트 변경 ⭐️
                 openActionButton.innerText = '수정/삭제 취소';
                 openActionButton.classList.add('cancel-mode');
-                // 안내 메시지 추가 (모드 활성화 시)
+                
                  const message = document.createElement('p');
                  message.style.cssText = "text-align: center; color: #d9534f; font-weight: bold; margin: 15px 0 30px 0;";
                  message.innerText = '🛠️ 수정/삭제할 배너를 목록에서 직접 클릭해주세요.';
                  container.appendChild(message);
             } else {
                 containerDiv.classList.remove('editing-mode');
-                // ⭐️ 버튼 텍스트 복구 ⭐️
                 openActionButton.innerText = '🛠️ 수정/삭제하기';
                 openActionButton.classList.remove('cancel-mode');
             }
@@ -853,18 +851,16 @@ function newColour() {
         }
 
         // ----------------------------------------------------
-        // 4. 통합 수정/삭제 패널 함수 (취소 기능 추가)
+        // 4. 통합 수정/삭제 패널 함수 (취소 기능 및 버튼 비활성화 적용)
         // ----------------------------------------------------
         
         function openCombinedActionPanel() {
             closeRegisterPanel(); 
             
-            // ⭐️ 핵심 변경: 모드 취소 시 버튼 비활성화 ⭐️
+            // 모드 취소 기능 (딜레이 발생 지점)
             if (isEditingMode) {
-                // 모드 활성화 상태에서 누르면 취소 (closeActionPanel 호출)
-                openActionButton.disabled = true; // 버튼 비활성화
+                openActionButton.disabled = true; // 버튼 비활성화하여 중복 클릭 방지
                 closeActionPanel(); 
-                // closeActionPanel에서 loadEntries()가 완료되면 버튼이 다시 활성화됩니다.
                 return;
             }
             
@@ -888,11 +884,10 @@ function newColour() {
             currentEntryId = null;
             currentPassword = null;
             isEditingMode = false; // 모드 비활성화
-            
-            // 상태 초기화 후 다시 렌더링 (버튼 텍스트 복구 포함)
-            // loadEntries()가 완료된 후 버튼이 활성화되도록 합니다.
+
+            // 상태 초기화 후 다시 렌더링 (loadEntries()가 비동기 작업을 수행)
+            // 작업이 완료되면 버튼을 다시 활성화합니다.
             loadEntries().finally(() => {
-                 // ⭐️ 변경: 로딩 완료 후 버튼을 다시 활성화 ⭐️
                  openActionButton.disabled = false; 
             });
         }
@@ -921,7 +916,7 @@ function newColour() {
             document.getElementById('passwordCheckTarget').innerText = `'${entry.name}' 항목의 비밀번호를 입력해주세요.`;
             document.getElementById('passwordCheckModal').style.display = 'block';
             
-            renderEntries(allEntries); // 목록에서 선택된 항목 강조
+            renderEntries(allEntries); 
             
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
@@ -1026,4 +1021,3 @@ function newColour() {
     </script>
 </body>
 </html>
-
