@@ -9,8 +9,8 @@ var sparkles=50;
 var x=ox=400;
 var y=oy=300;
 var swide=800;
-var shigh=600; // ⭐️ 중요: shigh는 set_width에서 문서 전체 높이로 설정되지만, 소멸 조건에서는 뷰포트 높이가 필요합니다.
-var sh_viewport=600; // 💡 뷰포트 높이를 저장할 새로운 변수 추가
+var shigh=600; // 문서 전체 높이
+var sh_viewport=600; // 💡 뷰포트 높이를 저장할 변수 (추가됨)
 var sleft=sdown=0;
 var tiny=new Array();
 var star=new Array();
@@ -97,7 +97,7 @@ function update_star(i) {
     if (starv[i]) {
         stary[i]+=1+Math.random()*3;
         starx[i]+=(i%5-2)/5;
-        // 💡 수정된 부분: 뷰포트 하단 경계 (sdown + sh_viewport - 10px 여백)를 기준으로 소멸!
+        // 💡 (이전 수정 유지): 뷰포트 하단 경계 (sdown + sh_viewport - 10px 여백)를 기준으로 소멸!
         if (stary[i] < sdown + sh_viewport - 10) { 
             star[i].style.top=stary[i]+"px";
             star[i].style.left=starx[i]+"px";
@@ -128,7 +128,7 @@ function update_tiny(i) {
     if (tinyv[i]) {
         tinyy[i]+=1+Math.random()*3;
         tinyx[i]+=(i%5-2)/5;
-        // 💡 수정된 부분: 뷰포트 하단 경계 (sdown + sh_viewport - 10px 여백)를 기준으로 소멸!
+        // 💡 (이전 수정 유지): 뷰포트 하단 경계 (sdown + sh_viewport - 10px 여백)를 기준으로 소멸!
         if (tinyy[i] < sdown + sh_viewport - 10) { 
             tiny[i].style.top=tinyy[i]+"px";
             tiny[i].style.left=tinyx[i]+"px";
@@ -139,7 +139,6 @@ function update_tiny(i) {
 
 function mouse(e) {
     if (e) {
-        // ⭐️ 뷰포트 높이와 스크롤 위치를 사용하는 경우 e.clientY 대신 e.pageY 사용이 맞습니다. (기존 코드 유지)
         y=e.pageY;
         x=e.pageX;
     }
@@ -148,6 +147,14 @@ function mouse(e) {
         y=event.y+sdown;
         x=event.x+sleft;
     }
+
+    // ⭐️ 추가된 수정: 파티클 생성 위치를 현재 뷰포트 하단 경계로 제한
+    var viewport_bottom = sdown + sh_viewport;
+    if (y >= viewport_bottom - 5) { // 5px 정도의 작은 여백을 두고 제한
+        y = viewport_bottom - 5;
+    }
+    // ⭐️ 추가된 수정 끝
+
     is_active = true; 
 }
 
@@ -156,7 +163,7 @@ function scrollMove() {
     if (now - last_scroll_time < 100) return; 
     last_scroll_time = now;
     set_scroll(); 
-    // 마우스가 움직이지 않아도 스크롤 시 파티클 생성 위치를 중앙으로 재설정하여 깜빡임을 방지 (이전과 동일)
+    // 마우스가 움직이지 않아도 스크롤 시 파티클 생성 위치를 중앙으로 재설정 (이전 수정 유지)
     x = sleft + swide / 2;
     y = sdown + sh_viewport / 2; // 뷰포트 중앙으로 파티클 생성 위치 재설정
     ox = -1; 
@@ -186,7 +193,7 @@ function set_scroll() {
     set_width(); // 스크롤 시에도 너비/높이 갱신
 }
 
-// ⭐️ set_width() 함수 수정 및 변수 추가 ⭐️
+// ⭐️ set_width() 함수 (이전 수정 유지) ⭐️
 function set_width() {
     var sw_min=999999;
     var sh_min=999999;
@@ -211,7 +218,7 @@ function set_width() {
     swide=sw_min; // 너비는 뷰포트로 유지
     sh_viewport=sh_min; // 💡 뷰포트 높이 저장
     
-    // 2. shigh를 문서 전체 높이로 설정 (기존 로직 유지)
+    // 2. shigh를 문서 전체 높이로 설정
     var doc_height = Math.max(
         document.body.scrollHeight, 
         document.documentElement.scrollHeight, 
@@ -1236,6 +1243,7 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
+
 
 
 
