@@ -9,8 +9,7 @@ var sparkles=50;
 var x=ox=400;
 var y=oy=300;
 var swide=800;
-var shigh=600; // 문서 전체 높이
-var sh_viewport=600; // 💡 뷰포트 높이
+var shigh=600;
 var sleft=sdown=0;
 var tiny=new Array();
 var star=new Array();
@@ -25,8 +24,6 @@ var is_active = false;
 var customColours = [
     "#A52A2A", "#D2B48C", "#F5DEB3", "#B8860B", "#DEB887", "#FFD700"  
 ];
-// ⭐️ 설정: 창(뷰포트) 하단에 둘 여백 (픽셀 단위)
-const VIEWPORT_BOTTOM_PADDING = 20;
 
 function isMobile() {
     var userAgent = navigator.userAgent.toLowerCase();
@@ -66,7 +63,7 @@ function initializeSparkles() { 
     if (!isMobile()) {
         document.onmousemove=mouse;
         window.addEventListener('scroll', scrollMove, { passive: true });
-        window.addEventListener('resize', set_width);
+        window.addEventListener('resize', set_width); // 리사이즈 이벤트 추가
     }
 })();
 
@@ -99,8 +96,8 @@ function update_star(i) {
     if (starv[i]) {
         stary[i]+=1+Math.random()*3;
         starx[i]+=(i%5-2)/5;
-        // 💡 (이전 수정 유지): 뷰포트 하단 경계 + 여백을 기준으로 소멸!
-        if (stary[i] < sdown + sh_viewport - VIEWPORT_BOTTOM_PADDING) { 
+        // ⭐️ 수정: shigh+sdown 대신 shigh만 사용 (shigh가 이제 문서 전체 높이)
+        if (stary[i]<shigh) { 
             star[i].style.top=stary[i]+"px";
             star[i].style.left=starx[i]+"px";
         }
@@ -130,8 +127,8 @@ function update_tiny(i) {
     if (tinyv[i]) {
         tinyy[i]+=1+Math.random()*3;
         tinyx[i]+=(i%5-2)/5;
-        // 💡 (이전 수정 유지): 뷰포트 하단 경계 + 여백을 기준으로 소멸!
-        if (tinyy[i] < sdown + sh_viewport - VIEWPORT_BOTTOM_PADDING) { 
+        // ⭐️ 수정: shigh+sdown 대신 shigh만 사용 (shigh가 이제 문서 전체 높이)
+        if (tinyy[i]<shigh) { 
             tiny[i].style.top=tinyy[i]+"px";
             tiny[i].style.left=tinyx[i]+"px";
         }
@@ -139,39 +136,27 @@ function update_tiny(i) {
     else tiny[i].style.visibility="hidden";
 }
 
-// ⭐️ 핵심 수정 부분: 마우스 좌표를 뷰포트 기준으로 가져와 문서 기준으로 변환 ⭐️
 function mouse(e) {
-    set_scroll();
     if (e) {
-        // e.clientX/clientY는 뷰포트 기준 좌표입니다.
-        // 여기에 현재 스크롤 위치(sdown, sleft)를 더해 문서 기준 좌표(x, y)를 얻습니다.
-        y = e.clientY + sdown;
-        x = e.clientX + sleft;
+        y=e.pageY;
+        x=e.pageX;
     }
     else {
-        y = event.clientY + sdown;
-        x = event.clientX + sleft;
+        set_scroll();
+        y=event.y+sdown;
+        x=event.x+sleft;
     }
-
-    // ⭐️ 추가된 수정: 파티클 생성 위치를 뷰포트 하단 경계로 제한
-    var viewport_bottom_limit = sdown + sh_viewport - VIEWPORT_BOTTOM_PADDING;
-    if (y >= viewport_bottom_limit) {
-        y = viewport_bottom_limit;
-    }
-    // ⭐️ 추가된 수정 끝
-
     is_active = true; 
 }
-// ⭐️ 핵심 수정 부분 끝 ⭐️
 
 function scrollMove() {
     var now = Date.now();
     if (now - last_scroll_time < 100) return; 
     last_scroll_time = now;
     set_scroll(); 
-    // 스크롤 시 파티클 생성 위치를 뷰포트 중앙으로 재설정
+    // 마우스가 움직이지 않아도 스크롤 시 파티클 생성 위치를 중앙으로 재설정하여 깜빡임을 방지 (이전과 동일)
     x = sleft + swide / 2;
-    y = sdown + sh_viewport / 2;
+    y = sdown + shigh / 2; // shigh가 이제 전체 문서 높이이므로, y 좌표 계산 방식에 주의가 필요할 수 있으나, scrollMove의 목적 상 그대로 유지
     ox = -1; 
     oy = -1;
     is_active = true;
@@ -196,14 +181,15 @@ function set_scroll() {
         sdown=0;
         sleft=0;
     }
-    set_width();
+    set_width(); // 스크롤 시에도 너비/높이 갱신
 }
 
+// ⭐️ set_width() 함수 수정 ⭐️
 function set_width() {
     var sw_min=999999;
     var sh_min=999999;
     
-    // 1. 뷰포트 너비/높이 계산
+    // 1. 뷰포트 너비/높이 계산 (sw_min, sh_min은 뷰포트 크기)
     if (document.documentElement && document.documentElement.clientWidth) {
         if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
         if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
@@ -220,16 +206,18 @@ function set_width() {
         sw_min=800;
         sh_min=600;
     }
-    swide=sw_min;
-    sh_viewport=sh_min; // 뷰포트 높이 저장
+    swide=sw_min; // 너비는 뷰포트로 유지
     
-    // 2. shigh를 문서 전체 높이로 설정 (파티클이 사라지는 기준이 됨)
+    // 2. ⭐️ 중요 수정: shigh를 문서 전체 높이로 설정 ⭐️
     var doc_height = Math.max(
         document.body.scrollHeight, 
         document.documentElement.scrollHeight, 
         document.body.offsetHeight, 
-        document.documentElement.offsetHeight
+        document.documentElement.offsetHeight,
+        document.documentElement.clientHeight // 최소 뷰포트 높이
     );
+    
+    // 전체 문서 높이 또는 최소한 현재 뷰포트 높이를 shigh로 사용
     shigh = doc_height;
 }
 
@@ -249,6 +237,7 @@ function newColour() {
 }
 // 마우스 우클릭 메뉴(contextmenu) 비활성화
 document.addEventListener('contextmenu', function(e) {
+// 우클릭 이벤트의 기본 동작(컨텍스트 메뉴 표시)을 막습니다.
     e.preventDefault();
 });
 // ]]>
@@ -1244,6 +1233,7 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
+
 
 
 
