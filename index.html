@@ -711,7 +711,7 @@ document.addEventListener('contextmenu', function(e) {
                 
                 <div class="action-button-group">
                     <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
-                    <button id="deleteEntryButton" class="action-panel-button" onclick="confirmDelete()">항목 삭제</button>
+                    <button id="deleteEntryButton" class="action-panel-button" onclick="confirmDelete()">배너 삭제</button>
                 </div>
             </div>
         </div>
@@ -833,8 +833,9 @@ document.addEventListener('contextmenu', function(e) {
                 document.getElementById('bannerUrlInput').value = '';
                 document.getElementById('passwordInput').value = '';
                 
-                alert('배너 항목이 성공적으로 등록되었습니다!');
+                alert('배너가 성공적으로 등록되었습니다!');
                 closeRegisterPanel(); 
+                await new Promise(resolve => setTimeout(resolve, 500));
                 loadEntries(); 
             } else {
                 alert('등록 실패: ' + result.message);
@@ -868,7 +869,7 @@ document.addEventListener('contextmenu', function(e) {
                 entryListContainer.innerHTML = `
                     <p class="status-message" style="color: #aaa;">
                         아직 등록된 배너가 없습니다.<br>
-                        '내 배너 등록하기' 버튼을 눌러 첫 항목을 등록해주세요!
+                        '내 배너 등록하기' 버튼을 눌러 첫 배너를 등록해주세요!
                     </p>
                 `;
                 document.querySelector('.container').classList.remove('editing-mode');
@@ -1026,7 +1027,7 @@ document.addEventListener('contextmenu', function(e) {
             const entry = allEntries.find(e => String(e.id) === String(id));
             
             if (!entry) {
-                alert('선택된 항목을 찾을 수 없습니다.');
+                alert('선택된 배너를 찾을 수 없습니다.');
                 closeActionPanel();
                 return;
             }
@@ -1035,7 +1036,7 @@ document.addEventListener('contextmenu', function(e) {
             
             document.getElementById('modalPasswordInput').value = '';
             document.getElementById('modalError').innerText = '';
-            document.getElementById('passwordCheckTarget').innerText = `'${entry.name}' 항목의 비밀번호를 입력해주세요.`;
+            document.getElementById('passwordCheckTarget').innerText = `'${entry.name}' 비밀번호를 입력해주세요.`;
             document.getElementById('passwordCheckModal').style.display = 'block';
             
             // 비밀번호 확인 모달이 열릴 때도 컨테이너 비우고 렌더링
@@ -1114,7 +1115,7 @@ document.addEventListener('contextmenu', function(e) {
         }
         
         function confirmDelete() {
-             if (!confirm('정말로 이 배너 등록 항목을 삭제하시겠습니까?')) {
+             if (!confirm('정말로 이 배너를 삭제하겠습니까?')) {
                  return;
              }
              deleteEntry();
@@ -1134,7 +1135,7 @@ document.addEventListener('contextmenu', function(e) {
 
             if (result.success) {
                 closeActionPanel();
-                alert('등록 항목이 성공적으로 삭제되었습니다.');
+                alert('배너가 성공적으로 삭제되었습니다.');
             } else {
                 alert('삭제 실패: ' + result.message);
             }
@@ -1145,6 +1146,7 @@ document.addEventListener('contextmenu', function(e) {
     </script>
 </body>
 </html>
+
 
 
 
