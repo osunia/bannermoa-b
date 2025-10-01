@@ -615,6 +615,15 @@ function newColour() {
             background-color: #aaa;
             cursor: not-allowed;
         }
+
+        /* ⭐️ [추가] 규정 문구 스타일 */
+.warning-text {
+    color: #C0392B; /* 붉은색 계열 */
+    font-size: 0.85em; /* 작은 폰트 */
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0; /* 상하 여백 */
+        }
     </style>
 </head>
 <body>
@@ -644,10 +653,15 @@ function newColour() {
                 </div>
                 <div class="form-group">
                     <label for="passwordInput">비밀번호 (수정/삭제용)</label>
-                    <input type="password" id="passwordInput" placeholder="4자 이상 (필수)" minlength="4" required>
+                <input type="password" id="passwordInput" placeholder="4자 이상 (필수)" minlength="4" required>
                 </div>
-                <button id="submitEntry" class="modal-submit-button" onclick="addEntry()">등록하기</button>
-            </div>
+    
+                <div class="warning-text">
+                    도배성 게시물 및 비방글은 사전 고지 없이 즉시 삭제됩니다.
+                </div>
+
+    <button id="submitEntry" class="modal-submit-button" onclick="addEntry()">등록하기</button>
+</div>
         </div>
         
         <div id="passwordCheckModal" style="display: none;">
@@ -1115,3 +1129,4 @@ function newColour() {
     </script>
 </body>
 </html>
+
