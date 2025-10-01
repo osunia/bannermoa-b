@@ -1106,74 +1106,87 @@ document.addEventListener('contextmenu', function(e) {
 
     // ----------------------------------------------------
     // 6. 수정 및 삭제 처리
-    // ----------------------------------------------------
+// ----------------------------------------------------
+
+async function saveEdit() {
+    const newHomeUrl = document.getElementById('editHomeUrlInput').value.trim();
+    const newBannerUrl = document.getElementById('editBannerUrlInput').value.trim();
     
-    async function saveEdit() {
-        const newHomeUrl = document.getElementById('editHomeUrlInput').value.trim();
-        const newBannerUrl = document.getElementById('editBannerUrlInput').value.trim();
+    // ⭐️ 새 비밀번호 입력란에서 값 가져오기 (HTML에 'editNewPasswordInput'이 추가되었다고 가정)
+    const newPassword = document.getElementById('editNewPasswordInput').value.trim(); 
 
-        if (!newHomeUrl || !newBannerUrl) {
-            showCustomAlert('홈 주소와 배너 이미지 주소는 필수 입력 항목입니다.', false); // ⬅️ alert 대체
-            return;
-        }
-        
-        const saveButton = document.getElementById('saveEditButton');
-        saveButton.disabled = true;
-        saveButton.innerText = '저장 중...';
-
-
-        const dataToSend = {
-            id: currentEntryId,
-            password: currentPassword, // ⬅️ 서버로 평문 비밀번호 전송 (서버에서 해싱 후 검증)
-            homeUrl: newHomeUrl,
-            bannerUrl: newBannerUrl
-        };
-        
-        const result = await sendDataToSheet(dataToSend, 'PUT'); 
-
-        if (result.success) {
-            closeActionPanel();
-            showCustomAlert('배너 정보가 성공적으로 수정되었습니다.'); // ⬅️ alert 대체
-        } else {
-            showCustomAlert('수정 실패: ' + result.message, false); // ⬅️ alert 대체
-        }
-        
-        saveButton.disabled = false;
-        saveButton.innerText = '수정 저장';
+    if (!newHomeUrl || !newBannerUrl) {
+        showCustomAlert('홈 주소와 배너 이미지 주소는 필수 입력 항목입니다.', false);
+        return;
     }
     
-    function confirmDelete() {
-         if (!confirm('정말로 이 배너를 삭제하겠습니까?')) {
-             return;
-         }
-         deleteEntry();
+    // ⭐️ 새 비밀번호를 입력했지만 4자 미만인 경우 유효성 검사 ⭐️
+    if (newPassword && newPassword.length < 4) {
+        showCustomAlert('새 비밀번호를 입력하려면 4자 이상이어야 합니다.', false);
+        return;
     }
 
-    async function deleteEntry() {
-        const deleteButton = document.getElementById('deleteEntryButton');
-        deleteButton.disabled = true;
-        deleteButton.innerText = '삭제 중...';
+    const saveButton = document.getElementById('saveEditButton');
+    saveButton.disabled = true;
+    saveButton.innerText = '저장 중...';
 
-        const dataToSend = {
-            id: currentEntryId,
-            password: currentPassword // ⬅️ 서버로 평문 비밀번호 전송 (서버에서 해싱 후 검증)
-        };
+    const dataToSend = {
+        id: currentEntryId,
+        password: currentPassword, // ⬅️ 검증용 기존 비밀번호 (평문)
+        homeUrl: newHomeUrl,
+        bannerUrl: newBannerUrl,
+        newPassword: newPassword // ⬅️ 새 비밀번호 (값이 있으면 서버에서 업데이트됨)
+    };
+    
+    const result = await sendDataToSheet(dataToSend, 'PUT'); 
 
-        const result = await sendDataToSheet(dataToSend, 'DELETE');
+    if (result.success) {
+        // ⭐️ 성공 시 새 비밀번호 입력 필드를 초기화합니다. ⭐️
+        const newPassInput = document.getElementById('editNewPasswordInput');
+        if(newPassInput) newPassInput.value = '';
 
-        if (result.success) {
-            closeActionPanel();
-            showCustomAlert('배너가 성공적으로 삭제되었습니다.'); // ⬅️ alert 대체
-        } else {
-            showCustomAlert('삭제 실패: ' + result.message, false); // ⬅️ alert 대체
-        }
-        
-        deleteButton.disabled = false;
-        deleteButton.innerText = '항목 삭제';
+        closeActionPanel();
+        showCustomAlert('배너 정보가 성공적으로 수정되었습니다.');
+    } else {
+        showCustomAlert('수정 실패: ' + result.message, false);
     }
-</script>
+    
+    saveButton.disabled = false;
+    saveButton.innerText = '수정 저장';
+}
+
+function confirmDelete() {
+    if (!confirm('정말로 이 배너를 삭제하겠습니까?')) {
+        return;
+    }
+    deleteEntry();
+}
+
+async function deleteEntry() {
+    const deleteButton = document.getElementById('deleteEntryButton');
+    deleteButton.disabled = true;
+    deleteButton.innerText = '삭제 중...';
+
+    const dataToSend = {
+        id: currentEntryId,
+        password: currentPassword // ⬅️ 서버로 평문 비밀번호 전송 (서버에서 해싱 후 검증)
+    };
+
+    const result = await sendDataToSheet(dataToSend, 'DELETE');
+
+    if (result.success) {
+        closeActionPanel();
+        showCustomAlert('배너가 성공적으로 삭제되었습니다.');
+    } else {
+        showCustomAlert('삭제 실패: ' + result.message, false);
+    }
+    
+    deleteButton.disabled = false;
+    deleteButton.innerText = '배너 삭제';
+}
 </body>
 </html>
+
 
 
 
