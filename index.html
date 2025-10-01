@@ -486,7 +486,7 @@ function newColour() {
             cursor: pointer;
         }
         
-        /* ⭐️ 추가: 수정/삭제 버튼 그룹 컨테이너 ⭐️ */
+        /* 수정/삭제 버튼 그룹 컨테이너 */
         .action-button-group {
             display: flex;
             gap: 10px; /* 버튼 사이 간격 */
@@ -494,9 +494,8 @@ function newColour() {
         }
         
         .action-panel-button {
-            width: 50%; /* ⭐️ 변경: 가로 배치 위해 50%로 설정 ⭐️ */
+            width: 50%; /* 가로 배치 위해 50%로 설정 */
             padding: 10px;
-            /* margin-top: 10px; -> action-button-group의 margin-top으로 대체 */
             margin: 0; /* 개별 마진 제거 */
             font-family: 'Gowun Dodum', sans-serif;
             border: none;
@@ -508,7 +507,7 @@ function newColour() {
         }
 
         #checkPasswordButton {
-            width: 100%; /* 이 버튼은 단독으로 쓰이므로 100% 유지 */
+            width: 100%; 
             background-color: #ab9172; 
         }
         #checkPasswordButton:hover {
@@ -527,11 +526,6 @@ function newColour() {
         }
         #deleteEntryButton:hover:not(:disabled) {
              background-color: #c9302c;
-        }
-        
-        /* 수정/삭제 버튼 그룹에 의해 불필요해진 스타일 제거 */
-        #deleteEntryButton { 
-            /* margin-top: 5px; -> action-button-group에 의해 제거됨 */
         }
         
         #modalError {
@@ -638,7 +632,7 @@ function newColour() {
         </div>
         
         <div id="passwordCheckModal" style="display: none;">
-            <span class="close-btn" onclick="closeActionPanel()">&times;</span>
+            <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span> 
             <h3>🔐 비밀번호 확인</h3>
             <p id="passwordCheckTarget"></p> 
             <div id="passwordInputGroup">
@@ -652,7 +646,7 @@ function newColour() {
         </div>
         
         <div id="actionPanel" style="display: none;">
-            <span class="close-btn" onclick="closeActionPanel()">&times;</span>
+            <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span>
             <h3 id="panelTitle">🛠️ 선택 항목 수정/삭제</h3>
             
             <div id="editFormGroup">
@@ -888,9 +882,15 @@ function newColour() {
             });
         }
         
-        // 등록 패널 열기/닫기 (이전과 동일)
+        // ⭐️ 추가: 등록 패널과 모달만 닫고, 수정모드는 유지/목록 새로고침은 하지 않음 ⭐️
+        function closeActionModalsAndPanels() {
+            document.getElementById('passwordCheckModal').style.display = 'none';
+            document.getElementById('actionPanel').style.display = 'none';
+        }
+
+        // 등록 패널 열기/닫기 (수정)
         function openRegisterPanel() {
-            closeActionPanel(); 
+            closeActionModalsAndPanels(); // ⭐️ 수정: 불필요한 closeActionPanel() 대신 사용 ⭐️
             document.getElementById('registerPanel').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
@@ -900,7 +900,7 @@ function newColour() {
         }
 
         // ----------------------------------------------------
-        // 4. 통합 수정/삭제 패널 함수 (취소 기능 및 버튼 비활성화 적용)
+        // 4. 통합 수정/삭제 패널 함수 (수정/취소 로직 포함)
         // ----------------------------------------------------
         
         function openCombinedActionPanel() {
@@ -909,13 +909,12 @@ function newColour() {
             // 모드 취소 기능 (딜레이 발생 지점)
             if (isEditingMode) {
                 openActionButton.disabled = true; // 버튼 비활성화하여 중복 클릭 방지
-                closeActionPanel(); 
+                closeActionPanel(); // ⭐️ 수정: 여기서만 closeActionPanel() 호출 ⭐️
                 return;
             }
             
             // 모드 활성화 시작
-            document.getElementById('passwordCheckModal').style.display = 'none';
-            document.getElementById('actionPanel').style.display = 'none';
+            closeActionModalsAndPanels(); // 등록/액션 패널 및 모달만 닫음
             
             currentEntryId = null;
             currentPassword = null;
@@ -929,8 +928,7 @@ function newColour() {
         }
 
         function closeActionPanel() {
-            document.getElementById('passwordCheckModal').style.display = 'none';
-            document.getElementById('actionPanel').style.display = 'none';
+            closeActionModalsAndPanels(); // 모달/패널 숨김
             
             currentEntryId = null;
             currentPassword = null;
@@ -947,7 +945,7 @@ function newColour() {
         }
         
         // ----------------------------------------------------
-        // 5. 비밀번호 확인 모달 관리 함수 (이전과 동일)
+        // 5. 비밀번호 확인 모달 관리 함수 (수정)
         // ----------------------------------------------------
 
         function openPasswordCheckModal(id) {
@@ -962,8 +960,7 @@ function newColour() {
                 return;
             }
             
-            document.getElementById('registerPanel').style.display = 'none';
-            document.getElementById('actionPanel').style.display = 'none';
+            closeActionModalsAndPanels(); // ⭐️ 수정: 불필요한 패널 닫기 대신 사용 ⭐️
             
             document.getElementById('modalPasswordInput').value = '';
             document.getElementById('modalError').innerText = '';
