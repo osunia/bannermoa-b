@@ -625,7 +625,7 @@ function newColour() {
         <div class="footer">
             <p style="margin-bottom: 3px;">©2025 bannermoa. All rights reserved.</p>
             <p style="margin-top: 0;">
-                <a href="https://osunia.github.io/bannermoa/">메인 페이지로 돌아가기</a>
+                <a href="#" onclick="redirectToMain(); return false;" style="color: #777; text-decoration: none;">메인 페이지로 돌아가기</a>
             </p>
         </div>
     </div>
@@ -641,6 +641,12 @@ function newColour() {
             }
             loadEntries(); // 서버에서 데이터 불러오기
         };
+
+        // ⭐️ 새로운 함수: 현재 창에서 메인 페이지로 이동 (가장 자연스러운 이동 방식) ⭐️
+        function redirectToMain() {
+            window.location.href = "https://osunia.github.io/bannermoa/";
+            return false; // 기본 링크 동작 방지
+        }
 
         let currentEntryId = null; 
         let currentPassword = null; 
