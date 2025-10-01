@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <script type="text/javascript">
+    <script type="text/javascript">
+// [파티클 관련 JavaScript 코드는 이전과 동일하게 유지]
 // <![CDATA[
-var colour="custom";  
+var colour="custom";  
 var sparkles=50;
-var x=ox=400; // 현재 마우스 x, 이전 마우스 x
-var y=oy=300; // 현재 마우스 y, 이전 마우스 y
-var swide=800; // 뷰포트 너비
-var shigh=600; // 문서 전체 높이
-var sleft=sdown=0; // 스크롤 위치
+var x=ox=400;
+var y=oy=300;
+var swide=800;
+var shigh=600;
+var sleft=sdown=0;
 var tiny=new Array();
 var star=new Array();
 var starv=new Array();
@@ -19,243 +20,225 @@ var tinyx=new Array();
 var tinyy=new Array();
 var tinyv=new Array();
 var last_scroll_time = 0;
-// var is_active = false; // ⭐️⭐️ 삭제 (핵심 수정) ⭐️⭐️
+var is_active = false;
 var customColours = [
-    "#A52A2A", "#D2B48C", "#F5DEB3", "#B8860B", "#DEB887", "#FFD700"  
+    "#A52A2A", "#D2B48C", "#F5DEB3", "#B8860B", "#DEB887", "#FFD700"  
 ];
 
 function isMobile() {
-    var userAgent = navigator.userAgent.toLowerCase();
-    return /android|iphone|ipad|ipod|blackberry|windows phone/g.test(userAgent);
+    var userAgent = navigator.userAgent.toLowerCase();
+    return /android|iphone|ipad|ipod|blackberry|windows phone/g.test(userAgent);
 }
 
-function initializeSparkles() { 
-    if (document.getElementById) {
-        var i, rats, rlef, rdow;
-        for (var i=0; i<sparkles; i++) {
-            // 작은 파티클 (폭발 후의 잔해)
-            var rats=createDiv(3, 3);
-            rats.style.visibility="hidden";
-            rats.style.zIndex="999";
-            document.body.appendChild(tiny[i]=rats);
-            starv[i]=0;
-            tinyv[i]=0;
-            
-            // 큰 파티클 (초기 생성)
-            var rats=createDiv(5, 5);
-            rats.style.backgroundColor="transparent";
-            rats.style.visibility="hidden";
-            rats.style.zIndex="999";
-            
-            var rlef=createDiv(1, 5); // 가로 줄
-            var rdow=createDiv(5, 1); // 세로 줄
-            rats.appendChild(rlef);
-            rats.appendChild(rdow);
-            
-            rlef.style.top="2px";
-            rlef.style.left="0px";
-            rdow.style.top="0px";
-            rdow.style.left="2px";
-            document.body.appendChild(star[i]=rats);
-        }
-        
-        // 이벤트 리스너를 initializeSparkles() 내부에 추가하여 확실하게 작동 보장
-        setupEvents(); 
-        
-        set_width();
-        sparkle(); // 파티클 루프 시작
-    }
+function initializeSparkles() { 
+    if (document.getElementById) {
+        var i, rats, rlef, rdow;
+        for (var i=0; i<sparkles; i++) {
+            var rats=createDiv(3, 3);
+            rats.style.visibility="hidden";
+            rats.style.zIndex="999";
+            document.body.appendChild(tiny[i]=rats);
+            starv[i]=0;
+            tinyv[i]=0;
+            var rats=createDiv(5, 5);
+            rats.style.backgroundColor="transparent";
+            rats.style.visibility="hidden";
+            rats.style.zIndex="999";
+            var rlef=createDiv(1, 5);
+            var rdow=createDiv(5, 1);
+            rats.appendChild(rlef);
+            rats.appendChild(rdow);
+            rlef.style.top="2px";
+            rlef.style.left="0px";
+            rdow.style.top="0px";
+            rdow.style.left="2px";
+            document.body.appendChild(star[i]=rats);
+        }
+        set_width();
+        sparkle();
+    }
 }
 
-function setupEvents() {
-    // ⭐️⭐️ 이벤트 설정 로직을 initializeSparkles() 호출 후 실행되도록 옮깁니다. ⭐️⭐️
-    if (!isMobile()) {
-        document.onmousemove=mouse;
-        window.addEventListener('scroll', scrollMove, { passive: true });
-        window.addEventListener('resize', set_width);
-    }
-    // window.onscroll=set_scroll; (아래에서 set_scroll()을 scroll 이벤트에 직접 연결)
-}
+(function setupEvents() {
+    if (!isMobile()) {
+        document.onmousemove=mouse;
+        window.addEventListener('scroll', scrollMove, { passive: true });
+        window.addEventListener('resize', set_width); // 리사이즈 이벤트 추가
+    }
+})();
 
 function sparkle() {
-    var c;
-    // ⭐️⭐️ 수정: is_active 대신 x, y 좌표 변화만 검사 ⭐️⭐️
-    // 마우스가 1px 이상 움직였을 때만 파티클 생성
-    if (Math.abs(x-ox)>1 || Math.abs(y-oy)>1) {
-        ox=x;
-        oy=y;
-        
-        for (c=0; c<sparkles; c++) {
-            if (!starv[c]) {
-                star[c].style.left=(starx[c]=x)+"px";
-                star[c].style.top=(stary[c]=y+1)+"px";
-                star[c].style.clip="rect(0px, 5px, 5px, 0px)";
-                
-                var selectedColour = (colour == "custom" || colour == "random") ? newColour() : colour;
-                star[c].childNodes[0].style.backgroundColor = star[c].childNodes[1].style.backgroundColor = selectedColour;
-                
-                star[c].style.visibility="visible";
-                starv[c]=50;
-                break;
-            }
-        }
-    }
-    
-    for (c=0; c<sparkles; c++) {
-        if (starv[c]) update_star(c);
-        if (tinyv[c]) update_tiny(c);
-    }
-    setTimeout("sparkle()", 40);
+    var c;
+    if (is_active && (Math.abs(x-ox)>1 || Math.abs(y-oy)>1)) {
+        ox=x;
+        oy=y;
+        is_active = false;
+        for (c=0; c<sparkles; c++) if (!starv[c]) {
+            star[c].style.left=(starx[c]=x)+"px";
+            star[c].style.top=(stary[c]=y+1)+"px";
+            star[c].style.clip="rect(0px, 5px, 5px, 0px)";
+            var selectedColour = (colour == "custom" || colour == "random") ? newColour() : colour;
+            star[c].childNodes[0].style.backgroundColor = star[c].childNodes[1].style.backgroundColor = selectedColour;
+            star[c].style.visibility="visible";
+            starv[c]=50;
+            break;
+        }
+    }
+    for (c=0; c<sparkles; c++) {
+        if (starv[c]) update_star(c);
+        if (tinyv[c]) update_tiny(c);
+    }
+    setTimeout("sparkle()", 40);
 }
 
 function update_star(i) {
-    if (--starv[i]==25) star[i].style.clip="rect(1px, 4px, 4px, 1px)";
-    if (starv[i]) {
-        stary[i]+=1+Math.random()*3;
-        starx[i]+=(i%5-2)/5;
-        
-        if (stary[i]<shigh) { 
-            star[i].style.top=stary[i]+"px";
-            star[i].style.left=starx[i]+"px";
-        }
-        else {
-            star[i].style.visibility="hidden";
-            starv[i]=0;
-            return;
-        }
-    }
-    else {
-        tinyv[i]=50;
-        tiny[i].style.top=(tinyy[i]=stary[i])+"px";
-        tiny[i].style.left=(tinyx[i]=starx[i])+"px";
-        tiny[i].style.width="2px";
-        tiny[i].style.height="2px";
-        tiny[i].style.backgroundColor=star[i].childNodes[0].style.backgroundColor;
-        star[i].style.visibility="hidden";
-        tiny[i].style.visibility="visible"
-    }
+    if (--starv[i]==25) star[i].style.clip="rect(1px, 4px, 4px, 1px)";
+    if (starv[i]) {
+        stary[i]+=1+Math.random()*3;
+        starx[i]+=(i%5-2)/5;
+        // ⭐️ 수정: shigh+sdown 대신 shigh만 사용 (shigh가 이제 문서 전체 높이)
+        if (stary[i]<shigh) { 
+            star[i].style.top=stary[i]+"px";
+            star[i].style.left=starx[i]+"px";
+        }
+        else {
+            star[i].style.visibility="hidden";
+            starv[i]=0;
+            return;
+        }
+    }
+    else {
+        tinyv[i]=50;
+        tiny[i].style.top=(tinyy[i]=stary[i])+"px";
+        tiny[i].style.left=(tinyx[i]=starx[i])+"px";
+        tiny[i].style.width="2px";
+        tiny[i].style.height="2px";
+        tiny[i].style.backgroundColor=star[i].childNodes[0].style.backgroundColor;
+        star[i].style.visibility="hidden";
+        tiny[i].style.visibility="visible"
+    }
 }
 
 function update_tiny(i) {
-    if (--tinyv[i]==25) {
-        tiny[i].style.width="1px";
-        tiny[i].style.height="1px";
-    }
-    if (tinyv[i]) {
-        tinyy[i]+=1+Math.random()*3;
-        tinyx[i]+=(i%5-2)/5;
-        
-        if (tinyy[i]<shigh) { 
-            tiny[i].style.top=tinyy[i]+"px";
-            tiny[i].style.left=tinyx[i]+"px";
-        }
-    }
-    else tiny[i].style.visibility="hidden";
+    if (--tinyv[i]==25) {
+        tiny[i].style.width="1px";
+        tiny[i].style.height="1px";
+    }
+    if (tinyv[i]) {
+        tinyy[i]+=1+Math.random()*3;
+        tinyx[i]+=(i%5-2)/5;
+        // ⭐️ 수정: shigh+sdown 대신 shigh만 사용 (shigh가 이제 문서 전체 높이)
+        if (tinyy[i]<shigh) { 
+            tiny[i].style.top=tinyy[i]+"px";
+            tiny[i].style.left=tinyx[i]+"px";
+        }
+    }
+    else tiny[i].style.visibility="hidden";
 }
 
 function mouse(e) {
-    // 마우스 좌표는 뷰포트 기준이어야 하므로, 스크롤 위치를 더해 문서 기준으로 변환합니다.
-    set_scroll(); // 스크롤 위치 갱신
-    if (e) {
-        y=e.pageY;
-        x=e.pageX;
-    }
-    else {
-        y=event.y+sdown;
-        x=event.x+sleft;
-    }
-    // ⭐️⭐️ is_active = true; 제거 ⭐️⭐️
+    if (e) {
+        y=e.pageY;
+        x=e.pageX;
+    }
+    else {
+        set_scroll();
+        y=event.y+sdown;
+        x=event.x+sleft;
+    }
+    is_active = true; 
 }
 
 function scrollMove() {
-    var now = Date.now();
-    if (now - last_scroll_time < 100) return; 
-    last_scroll_time = now;
-    set_scroll(); 
-    
-    // 스크롤 시 파티클 생성을 유도하기 위해 이전 좌표를 강제로 초기화
-    x = sleft + swide / 2; // 화면 중앙 x
-    y = sdown + shigh / 2; // 화면 중앙 y
-    
-    // ⭐️⭐️ 강제 초기화는 필요 없으므로 주석 처리
-    // ox = -1;  
-    // oy = -1;
-    // is_active = true;
+    var now = Date.now();
+    if (now - last_scroll_time < 100) return; 
+    last_scroll_time = now;
+    set_scroll(); 
+    // 마우스가 움직이지 않아도 스크롤 시 파티클 생성 위치를 중앙으로 재설정하여 깜빡임을 방지 (이전과 동일)
+    x = sleft + swide / 2;
+    y = sdown + shigh / 2; // shigh가 이제 전체 문서 높이이므로, y 좌표 계산 방식에 주의가 필요할 수 있으나, scrollMove의 목적 상 그대로 유지
+    ox = -1; 
+    oy = -1;
+    is_active = true;
 }
 
-window.onscroll=set_scroll; // scrollMove 대신 set_scroll을 직접 연결
+window.onscroll=set_scroll;
 
 function set_scroll() {
-    if (typeof(self.pageYOffset)=='number') {
-        sdown=self.pageYOffset;
-        sleft=self.pageXOffset;
-    }
-    else if (document.body && (document.body.scrollTop || document.body.scrollLeft)) {
-        sdown=document.body.scrollTop;
-        sleft=document.body.scrollLeft;
-    }
-    else if (document.documentElement && (document.documentElement.scrollTop || document.documentElement.scrollLeft)) {
-        sleft=document.documentElement.scrollLeft;
-        sdown=document.documentElement.scrollTop;
-    }
-    else {
-        sdown=0;
-        sleft=0;
-    }
-    set_width();
+    if (typeof(self.pageYOffset)=='number') {
+        sdown=self.pageYOffset;
+        sleft=self.pageXOffset;
+    }
+    else if (document.body && (document.body.scrollTop || document.body.scrollLeft)) {
+        sdown=document.body.scrollTop;
+        sleft=document.body.scrollLeft;
+    }
+    else if (document.documentElement && (document.documentElement.scrollTop || document.documentElement.scrollLeft)) {
+        sleft=document.documentElement.scrollLeft;
+        sdown=document.documentElement.scrollTop;
+    }
+    else {
+        sdown=0;
+        sleft=0;
+    }
+    set_width(); // 스크롤 시에도 너비/높이 갱신
 }
 
+// ⭐️ set_width() 함수 수정 ⭐️
 function set_width() {
-    var sw_min=999999;
-    var sh_min=999999;
-    
-    // 1. 뷰포트 너비/높이 계산
-    if (document.documentElement && document.documentElement.clientWidth) {
-        if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
-        if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
-    }
-    if (typeof(self.innerWidth)=='number' && self.innerWidth) {
-        if (self.innerWidth>0 && self.innerWidth<sw_min) sw_min=self.innerWidth;
-        if (self.innerHeight>0 && self.innerHeight<sh_min) sh_min=self.innerHeight;
-    }
-    if (document.body.clientWidth) {
-        if (document.body.clientWidth>0 && document.body.clientWidth<sw_min) sw_min=document.body.clientWidth;
-        if (document.body.clientHeight>0 && document.body.clientHeight<sh_min) sh_min=document.body.clientHeight;
-    }
-    if (sw_min==999999 || sh_min==999999) {
-        sw_min=800;
-        sh_min=600;
-    }
-    swide=sw_min; // 너비는 뷰포트로 유지
-    
-    // 2. shigh를 문서 전체 높이로 설정
-    var doc_height = Math.max(
-        document.body.scrollHeight, 
-        document.documentElement.scrollHeight, 
-        document.body.offsetHeight, 
-        document.documentElement.offsetHeight,
-        sh_min // 최소 뷰포트 높이
-    );
-    
-    shigh = doc_height;
+    var sw_min=999999;
+    var sh_min=999999;
+    
+    // 1. 뷰포트 너비/높이 계산 (sw_min, sh_min은 뷰포트 크기)
+    if (document.documentElement && document.documentElement.clientWidth) {
+        if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
+        if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
+    }
+    if (typeof(self.innerWidth)=='number' && self.innerWidth) {
+        if (self.innerWidth>0 && self.innerWidth<sw_min) sw_min=self.innerWidth;
+        if (self.innerHeight>0 && self.innerHeight<sh_min) sh_min=self.innerHeight;
+    }
+    if (document.body.clientWidth) {
+        if (document.body.clientWidth>0 && document.body.clientWidth<sw_min) sw_min=document.body.clientWidth;
+        if (document.body.clientHeight>0 && document.body.clientHeight<sh_min) sh_min=document.body.clientHeight;
+    }
+    if (sw_min==999999 || sh_min==999999) {
+        sw_min=800;
+        sh_min=600;
+    }
+    swide=sw_min; // 너비는 뷰포트로 유지
+    
+    // 2. ⭐️ 중요 수정: shigh를 문서 전체 높이로 설정 ⭐️
+    var doc_height = Math.max(
+        document.body.scrollHeight, 
+        document.documentElement.scrollHeight, 
+        document.body.offsetHeight, 
+        document.documentElement.offsetHeight,
+        document.documentElement.clientHeight // 최소 뷰포트 높이
+    );
+    
+    // 전체 문서 높이 또는 최소한 현재 뷰포트 높이를 shigh로 사용
+    shigh = doc_height;
 }
 
 
 function createDiv(height, width) {
-    var div=document.createElement("div");
-    div.style.position="absolute";
-    div.style.height=height+"px";
-    div.style.width=width+"px";
-    div.style.overflow="hidden";
-    return (div);
+    var div=document.createElement("div");
+    div.style.position="absolute";
+    div.style.height=height+"px";
+    div.style.width=width+"px";
+    div.style.overflow="hidden";
+    return (div);
 }
 
 function newColour() {
-    var index = Math.floor(Math.random() * customColours.length);
-    return customColours[index];
+    var index = Math.floor(Math.random() * customColours.length);
+    return customColours[index];
 }
+// 마우스 우클릭 메뉴(contextmenu) 비활성화
 document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
+// 우클릭 이벤트의 기본 동작(컨텍스트 메뉴 표시)을 막습니다.
+    e.preventDefault();
 });
 // ]]>
     </script>
@@ -1250,6 +1233,7 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
+
 
 
 
