@@ -456,6 +456,14 @@ function newColour() {
             margin: 0 auto;
             cursor: pointer;
             transition: transform 0.2s;
+
+            /* ⭐️ 추가된 방지 코드 시작 ⭐️ */
+            user-select: none; /* 표준: 텍스트 및 이미지 선택 방지 */
+            -webkit-user-select: none; /* 크롬, 사파리 */
+            -webkit-user-drag: none; /* 드래그하여 파일 저장 방지 (크롬/사파리) */
+            user-drag: none; /* 표준: 드래그하여 파일 저장 방지 */
+            /* ⭐️ 추가된 방지 코드 끝 ⭐️ */
+            
         }
 
         .entry-banner:hover {
@@ -1127,6 +1135,7 @@ function newColour() {
     </script>
 </body>
 </html>
+
 
 
 
