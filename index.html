@@ -235,6 +235,11 @@ function newColour() {
     var index = Math.floor(Math.random() * customColours.length);
     return customColours[index];
 }
+// 마우스 우클릭 메뉴(contextmenu) 비활성화
+document.addEventListener('contextmenu', function(e) {
+// 우클릭 이벤트의 기본 동작(컨텍스트 메뉴 표시)을 막습니다.
+    e.preventDefault();
+});
 // ]]>
     </script>
     <meta charset="UTF-8">
@@ -1135,6 +1140,7 @@ function newColour() {
     </script>
 </body>
 </html>
+
 
 
 
