@@ -334,9 +334,17 @@ function newColour() {
             color: #333;
         }
         
-        #openActionButton:hover {
-            border-color: #38705c; 
+        /* ⭐️ 변경: 수정 모드 취소 버튼 스타일 ⭐️ */
+        #openActionButton.cancel-mode {
+            border-color: #d9534f; /* 빨간색 계열 */
+            color: #d9534f;
+            font-weight: bold;
         }
+        #openActionButton.cancel-mode:hover {
+            border-color: #ac2925; 
+        }
+        /* -------------------------------------- */
+
 
         /* 배너 목록 컨테이너 */
         #entryListContainer {
@@ -494,15 +502,17 @@ function newColour() {
             color: #777;
             text-align: center; 
         }
-
+        
+        /* ⭐️ 변경된 부분: style 속성의 text-decoration: none; 제거 및 CSS 적용 ⭐️ */
         .footer a {
             color: #777;
-            text-decoration: none;
+            /* text-decoration: none; 이 부분을 아래 JavaScript에서 처리하여 CSS hover가 작동하도록 합니다. */
         }
 
         .footer a:hover {
             text-decoration: underline; 
         }
+        /* ------------------------------------ */
 
         /* 폼 요소 스타일 */
 
@@ -631,7 +641,7 @@ function newColour() {
         <div class="footer">
             <p style="margin-bottom: 3px;">©2025 bannermoa. All rights reserved.</p>
             <p style="margin-top: 0;">
-                <a href="#" onclick="redirectToMain(); return false;" style="color: #777; text-decoration: none;">메인 페이지로 돌아가기</a>
+                <a href="#" onclick="redirectToMain(); return false;" style="color: #777;">메인 페이지로 돌아가기</a>
             </p>
         </div>
     </div>
@@ -653,12 +663,13 @@ function newColour() {
         }
 
         let currentEntryId = null; 
-        let currentPassword = null; // 선택된 항목의 실제 비밀번호가 아니라, 사용자가 입력한 비밀번호를 저장합니다.
+        let currentPassword = null; 
         let isEditingMode = false; 
         let allEntries = []; 
+        const openActionButton = document.getElementById('openActionButton'); // 버튼 요소 가져오기
 
         // ----------------------------------------------------
-        // 1. 데이터 통신 함수
+        // 1. 데이터 통신 함수 (이전과 동일)
         // ----------------------------------------------------
 
         async function fetchEntriesFromSheet() {
@@ -768,17 +779,26 @@ function newColour() {
                         '내 배너 등록하기' 버튼을 눌러 첫 항목을 등록해주세요!
                     </p>
                 `;
-                // 수정 모드 종료
                 document.querySelector('.container').classList.remove('editing-mode');
                 return;
             }
             
-            // 수정 모드 상태에 따라 컨테이너 클래스 토글
             const containerDiv = document.querySelector('.container');
             if (isEditingMode) {
                 containerDiv.classList.add('editing-mode');
+                // ⭐️ 버튼 텍스트 변경 ⭐️
+                openActionButton.innerText = '수정/삭제 취소';
+                openActionButton.classList.add('cancel-mode');
+                // 안내 메시지 추가 (모드 활성화 시)
+                 const message = document.createElement('p');
+                 message.style.cssText = "text-align: center; color: #d9534f; font-weight: bold; margin: 15px 0 30px 0;";
+                 message.innerText = '🛠️ 수정/삭제할 배너를 목록에서 직접 클릭해주세요.';
+                 container.appendChild(message);
             } else {
                 containerDiv.classList.remove('editing-mode');
+                // ⭐️ 버튼 텍스트 복구 ⭐️
+                openActionButton.innerText = '🛠️ 수정/삭제하기';
+                openActionButton.classList.remove('cancel-mode');
             }
 
             entries.forEach(entry => {
@@ -786,7 +806,6 @@ function newColour() {
                 entryDiv.className = 'entry';
                 entryDiv.setAttribute('data-id', entry.id);
                 
-                // ⭐️ 변경: isEditingMode일 때만 openPasswordCheckModal 호출 ⭐️
                 entryDiv.onclick = function() { 
                     if (isEditingMode) {
                         openPasswordCheckModal(entry.id);
@@ -796,10 +815,8 @@ function newColour() {
                 const bannerImg = `<img src="${entry.bannerUrl}" class="entry-banner" alt="배너 이미지" onerror="this.src='https://i.imgur.com/rN5F2yS.png'; this.onerror=null;">`; 
                 const nameHtml = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; color: inherit;">${entry.name}</a>`;
                 
-                // 수정 모드일 때 링크 이동을 막는 로직 (배너 이미지를 클릭하면 모달이 열리도록)
                 let linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;">`;
                 if (isEditingMode) {
-                     // 수정 모드에서는 링크 이동을 막고 선택 이벤트로 대체
                     linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;" onclick="event.preventDefault(); openPasswordCheckModal(${entry.id});">`;
                 }
 
@@ -818,7 +835,6 @@ function newColour() {
 
                 container.appendChild(entryDiv);
                 
-                // 선택된 항목 강조
                 if (currentEntryId && String(entry.id) === String(currentEntryId)) {
                     entryDiv.classList.add('selected');
                 }
@@ -837,26 +853,29 @@ function newColour() {
         }
 
         // ----------------------------------------------------
-        // 4. 통합 수정/삭제 패널 함수 (변경됨)
+        // 4. 통합 수정/삭제 패널 함수 (취소 기능 추가)
         // ----------------------------------------------------
         
         function openCombinedActionPanel() {
             closeRegisterPanel(); 
+            
+            // ⭐️ 핵심 변경: 모드 취소 기능 ⭐️
+            if (isEditingMode) {
+                closeActionPanel(); // 모드 활성화 상태에서 누르면 취소
+                return;
+            }
+            
+            // 모드 활성화 시작
             document.getElementById('passwordCheckModal').style.display = 'none';
             document.getElementById('actionPanel').style.display = 'none';
             
-            // 초기화 및 모드 활성화
             currentEntryId = null;
             currentPassword = null;
             isEditingMode = true; // 수정 모드 활성화
             
             document.getElementById('modalError').innerText = '';
-            
-            // 사용자에게 안내 메시지 표시 (필요하다면)
-            const listContainer = document.getElementById('entryListContainer');
-            listContainer.innerHTML = `<p style="text-align: center; color: #d9534f; font-weight: bold; margin: 15px 0 30px 0;">🛠️ 수정/삭제할 배너를 목록에서 직접 클릭해주세요.</p>` + listContainer.innerHTML;
 
-            renderEntries(allEntries); 
+            renderEntries(allEntries); // 모드 활성화된 상태로 렌더링
         }
 
         function closeActionPanel() {
@@ -865,14 +884,14 @@ function newColour() {
             
             currentEntryId = null;
             currentPassword = null;
-            isEditingMode = false; 
+            isEditingMode = false; // 모드 비활성화
 
-            // 상태 초기화 후 다시 렌더링
+            // 상태 초기화 후 다시 렌더링 (버튼 텍스트 복구 포함)
             loadEntries(); 
         }
         
         // ----------------------------------------------------
-        // 5. 비밀번호 확인 모달 관리 함수 (새로운 로직)
+        // 5. 비밀번호 확인 모달 관리 함수 (이전과 동일)
         // ----------------------------------------------------
 
         function openPasswordCheckModal(id) {
@@ -887,18 +906,15 @@ function newColour() {
                 return;
             }
             
-            // 다른 패널 닫기
             document.getElementById('registerPanel').style.display = 'none';
             document.getElementById('actionPanel').style.display = 'none';
             
-            // 비밀번호 모달 초기화 및 표시
             document.getElementById('modalPasswordInput').value = '';
             document.getElementById('modalError').innerText = '';
             document.getElementById('passwordCheckTarget').innerText = `'${entry.name}' 항목의 비밀번호를 입력해주세요.`;
             document.getElementById('passwordCheckModal').style.display = 'block';
             
-            // 목록에서 선택된 항목 강조
-            renderEntries(allEntries); 
+            renderEntries(allEntries); // 목록에서 선택된 항목 강조
             
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
@@ -919,16 +935,13 @@ function newColour() {
                 return;
             }
             
-            // 비밀번호 확인 성공
-            currentPassword = password; // 성공한 비밀번호 저장
+            currentPassword = password; 
             showEditDeleteForm(entry);
         }
         
         function showEditDeleteForm(entry) {
-             // 비밀번호 확인 모달 닫기
             document.getElementById('passwordCheckModal').style.display = 'none';
             
-            // 수정/삭제 폼 초기화 및 표시
             document.getElementById('panelTitle').innerText = `'${entry.name}' 수정/삭제`;
             document.getElementById('editHomeUrlInput').value = entry.homeUrl;
             document.getElementById('editBannerUrlInput').value = entry.bannerUrl;
@@ -937,7 +950,7 @@ function newColour() {
         }
 
         // ----------------------------------------------------
-        // 6. 수정 및 삭제 처리 (비밀번호 검증 로직은 유지)
+        // 6. 수정 및 삭제 처리 (이전과 동일)
         // ----------------------------------------------------
         
         async function saveEdit() {
@@ -956,7 +969,7 @@ function newColour() {
 
             const dataToSend = {
                 id: currentEntryId,
-                password: currentPassword, // 이전에 확인된 비밀번호 사용
+                password: currentPassword, 
                 homeUrl: newHomeUrl,
                 bannerUrl: newBannerUrl
             };
