@@ -777,11 +777,6 @@ document.addEventListener('contextmenu', function(e) {
     // 0. 안정화 및 유틸리티 함수 (오류 방지)
     // ----------------------------------------------------
     
-    // 🚨 오류 방지를 위해 임시 더미 함수 추가 🚨
-    function isMobile() { return /Mobi/i.test(navigator.userAgent); }
-    function initializeSparkles() { /* 스파클 애니메이션 초기화 로직 (현재는 비어있음) */ }
-
-
     // 커스텀 알림 함수
     function showCustomAlert(message, isSuccess = true) {
         const alertDiv = document.getElementById('customAlert');
@@ -1255,6 +1250,7 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
+
 
 
 
