@@ -859,9 +859,12 @@ function newColour() {
         function openCombinedActionPanel() {
             closeRegisterPanel(); 
             
-            // ⭐️ 핵심 변경: 모드 취소 기능 ⭐️
+            // ⭐️ 핵심 변경: 모드 취소 시 버튼 비활성화 ⭐️
             if (isEditingMode) {
-                closeActionPanel(); // 모드 활성화 상태에서 누르면 취소
+                // 모드 활성화 상태에서 누르면 취소 (closeActionPanel 호출)
+                openActionButton.disabled = true; // 버튼 비활성화
+                closeActionPanel(); 
+                // closeActionPanel에서 loadEntries()가 완료되면 버튼이 다시 활성화됩니다.
                 return;
             }
             
@@ -885,9 +888,13 @@ function newColour() {
             currentEntryId = null;
             currentPassword = null;
             isEditingMode = false; // 모드 비활성화
-
+            
             // 상태 초기화 후 다시 렌더링 (버튼 텍스트 복구 포함)
-            loadEntries(); 
+            // loadEntries()가 완료된 후 버튼이 활성화되도록 합니다.
+            loadEntries().finally(() => {
+                 // ⭐️ 변경: 로딩 완료 후 버튼을 다시 활성화 ⭐️
+                 openActionButton.disabled = false; 
+            });
         }
         
         // ----------------------------------------------------
@@ -1019,3 +1026,4 @@ function newColour() {
     </script>
 </body>
 </html>
+
