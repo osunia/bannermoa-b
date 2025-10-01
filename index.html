@@ -695,27 +695,32 @@ document.addEventListener('contextmenu', function(e) {
             <p id="modalError"></p>
         </div>
         
-        <div id="actionPanel" style="display: none;">
-            <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span>
-            <h3 id="panelTitle">🛠️ 선택 항목 수정/삭제</h3>
-            
-            <div id="editFormGroup">
-                <p style="text-align: center; font-weight: bold; color: #645d55;">선택된 배너 정보 수정</p>
-                <div class="form-group">
-                    <label for="editHomeUrlInput">새 갠홈 주소</label>
-                    <input type="url" id="editHomeUrlInput" placeholder="https://new-home.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="editBannerUrlInput">새 배너 이미지 주소</label>
-                    <input type="url" id="editBannerUrlInput" placeholder="https://new-banner.png" required>
-                </div>
-                
-                <div class="action-button-group">
-                    <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
-                    <button id="deleteEntryButton" class="action-panel-button" onclick="confirmDelete()">배너 삭제</button>
-                </div>
-            </div>
+<div id="actionPanel" style="display: none;">
+    <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span>
+    <h3 id="panelTitle">🛠️ 선택 항목 수정/삭제</h3>
+    
+    <div id="editFormGroup">
+        <p style="text-align: center; font-weight: bold; color: #645d55;">선택된 배너 정보 수정</p>
+        <div class="form-group">
+            <label for="editHomeUrlInput">새 갠홈 주소</label>
+            <input type="url" id="editHomeUrlInput" placeholder="https://new-home.com" required>
         </div>
+        <div class="form-group">
+            <label for="editBannerUrlInput">새 배너 이미지 주소</label>
+            <input type="url" id="editBannerUrlInput" placeholder="https://new-banner.png" required>
+        </div>
+        
+        <div class="input-group" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+            <label for="editNewPasswordInput">새 비밀번호 (선택 사항)</label>
+            <input type="password" id="editNewPasswordInput" placeholder="비밀번호 변경 시에만 입력 (4자 이상)" minlength="4">
+            <p class="input-info">※ 비밀번호를 변경하지 않으려면 이 칸을 비워두세요.</p>
+        </div>
+        <div class="action-button-group">
+            <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
+            <button id="deleteEntryButton" class="action-panel-button" onclick="confirmDelete()">배너 삭제</button>
+        </div>
+    </div>
+</div>
 
 
         
@@ -1169,6 +1174,7 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
+
 
 
 
