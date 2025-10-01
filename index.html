@@ -878,12 +878,12 @@ document.addEventListener('contextmenu', function(e) {
             const containerDiv = document.querySelector('.container');
             if (isEditingMode) {
                 containerDiv.classList.add('editing-mode');
-                openActionButton.innerText = '수정/삭제 취소';
+                openActionButton.innerText = '🛠️ 수정/삭제 취소';
                 openActionButton.classList.add('cancel-mode');
                 
                  const message = document.createElement('p');
                  message.className = 'info-message-small';
-                 message.innerText = '🛠️ 수정/삭제할 배너를 목록에서 직접 클릭해주세요.';
+                 message.innerText = '수정/삭제할 배너를 목록에서 클릭해주세요.';
                  entryListContainer.appendChild(message);
             } else {
                 containerDiv.classList.remove('editing-mode');
@@ -1145,6 +1145,7 @@ document.addEventListener('contextmenu', function(e) {
     </script>
 </body>
 </html>
+
 
 
 
