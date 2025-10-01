@@ -736,417 +736,440 @@ document.addEventListener('contextmenu', function(e) {
         </div>
     </div>
 
-    <script>
-        const APPS_SCRIPT_URL = "https://bannermoa-proxy.bbglara.workers.dev/exec"; 
+<script>
+    const APPS_SCRIPT_URL = "https://bannermoa-proxy.bbglara.workers.dev/exec";
+    
+    // ----------------------------------------------------
+    // 0. 커스텀 알림 함수 추가 (alert() 대체)
+    // ----------------------------------------------------
+    // (이 코드가 실행되려면 HTML에 <div id="customAlert"> 요소가 필요합니다.)
+    function showCustomAlert(message, isSuccess = true) {
+        const alertDiv = document.getElementById('customAlert');
+        if (!alertDiv) {
+            console.error("Custom alert element not found. Using standard alert.");
+            alert(message);
+            return;
+        }
+        alertDiv.innerText = message;
+        alertDiv.style.backgroundColor = isSuccess ? '#5cb85c' : '#d9534f';
+        alertDiv.style.display = 'block';
 
-        window.onload = function() {
-            document.querySelector('.container').classList.add('loaded');
-            if (!isMobile()) {
-                initializeSparkles(); 
-            }
-            loadEntries(); 
+        setTimeout(() => {
+            alertDiv.style.display = 'none';
+        }, 3000); // 3초 후에 메시지 사라짐
+    }
+
+    window.onload = function() {
+        document.querySelector('.container').classList.add('loaded');
+        if (!isMobile()) {
+            initializeSparkles(); 
+        }
+        loadEntries(); 
+    };
+
+    function redirectToMain() {
+        window.location.href = "https://osunia.github.io/bannermoa/";
+        return false; 
+    }
+
+    let currentEntryId = null; 
+    let currentPassword = null; 
+    let isEditingMode = false; 
+    let allEntries = []; 
+    const openActionButton = document.getElementById('openActionButton'); 
+    const entryListContainer = document.getElementById('entryListContainer');
+    const initialLoadingMessage = document.getElementById('initialLoadingMessage');
+
+
+    // ----------------------------------------------------
+    // 1. 데이터 통신 함수
+    // ----------------------------------------------------
+
+    async function fetchEntriesFromSheet() {
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, { method: 'GET' });
+            const result = await response.json();
+            
+            // Apps Script에서 해시 값을 받아오므로, 여기서는 그대로 받아서 저장합니다.
+            allEntries = result.success 
+                ? (result.data || []).map(entry => ({ 
+                    ...entry, 
+                    password: String(entry.password).trim() 
+                  })) 
+                : (console.error("데이터 로드 실패:", result.message), []);
+            
+            return allEntries;
+        } catch (error) {
+            console.error("Apps Script 통신 오류 (GET):", error);
+            return [];
+        }
+    }
+
+    async function sendDataToSheet(data, action) {
+        data.action = action;
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error("Apps Script 통신 오류:", error);
+            return { success: false, message: "데이터 처리 중 네트워크 오류가 발생했습니다." };
+        }
+    }
+
+    // ----------------------------------------------------
+    // 2. 항목 추가/등록
+    // ----------------------------------------------------
+
+    async function addEntry() {
+        const name = document.getElementById('nameInput').value.trim();
+        const homeUrl = document.getElementById('homeUrlInput').value.trim();
+        const bannerUrl = document.getElementById('bannerUrlInput').value.trim();
+        const password = document.getElementById('passwordInput').value.trim();
+
+        if (!name || !homeUrl || !bannerUrl || !password || password.length < 4) {
+            showCustomAlert('이름, 홈 주소, 배너 주소, 비밀번호(4자 이상)는 필수 입력 사항입니다.', false); // ⬅️ alert 대체
+            return;
+        }
+        
+        const submitButton = document.getElementById('submitEntry');
+        submitButton.disabled = true;
+        submitButton.innerText = '등록 중...';
+
+        const newEntry = {
+            id: Date.now(), 
+            name: name,
+            homeUrl: homeUrl,
+            bannerUrl: bannerUrl,
+            password: password, // ⬅️ Apps Script로 평문 전송 (서버에서 해싱)
         };
 
-        function redirectToMain() {
-            window.location.href = "https://osunia.github.io/bannermoa/";
-            return false; 
-        }
+        const result = await sendDataToSheet(newEntry, 'CREATE'); 
 
-        let currentEntryId = null; 
-        let currentPassword = null; 
-        let isEditingMode = false; 
-        let allEntries = []; 
-        const openActionButton = document.getElementById('openActionButton'); 
-        const entryListContainer = document.getElementById('entryListContainer');
-        const initialLoadingMessage = document.getElementById('initialLoadingMessage');
-
-
-        // ----------------------------------------------------
-        // 1. 데이터 통신 함수 (이전과 동일)
-        // ----------------------------------------------------
-
-        async function fetchEntriesFromSheet() {
-            try {
-                const response = await fetch(APPS_SCRIPT_URL, { method: 'GET' });
-                const result = await response.json();
-                
-                allEntries = result.success 
-                    ? (result.data || []).map(entry => ({ 
-                        ...entry, 
-                        password: String(entry.password).trim() 
-                      })) 
-                    : (console.error("데이터 로드 실패:", result.message), []);
-                
-                return allEntries;
-            } catch (error) {
-                console.error("Apps Script 통신 오류 (GET):", error);
-                return [];
-            }
-        }
-
-        async function sendDataToSheet(data, action) {
-            data.action = action;
-            try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                return await response.json();
-            } catch (error) {
-                console.error("Apps Script 통신 오류:", error);
-                return { success: false, message: "데이터 처리 중 네트워크 오류가 발생했습니다." };
-            }
-        }
-
-        // ----------------------------------------------------
-        // 2. 항목 추가/등록 (이전과 동일)
-        // ----------------------------------------------------
-
-        async function addEntry() {
-            const name = document.getElementById('nameInput').value.trim();
-            const homeUrl = document.getElementById('homeUrlInput').value.trim();
-            const bannerUrl = document.getElementById('bannerUrlInput').value.trim();
-            const password = document.getElementById('passwordInput').value.trim();
-
-            if (!name || !homeUrl || !bannerUrl || !password || password.length < 4) {
-                alert('이름, 홈 주소, 배너 주소, 비밀번호(4자 이상)는 필수 입력 사항입니다.');
-                return;
-            }
+        if (result.success) {
+            document.getElementById('nameInput').value = '';
+            document.getElementById('homeUrlInput').value = '';
+            document.getElementById('bannerUrlInput').value = '';
+            document.getElementById('passwordInput').value = '';
             
-            const submitButton = document.getElementById('submitEntry');
-            submitButton.disabled = true;
-            submitButton.innerText = '등록 중...';
-
-            const newEntry = {
-                id: Date.now(), 
-                name: name,
-                homeUrl: homeUrl,
-                bannerUrl: bannerUrl,
-                password: password,
-            };
-
-            const result = await sendDataToSheet(newEntry, 'CREATE'); 
-
-            if (result.success) {
-                document.getElementById('nameInput').value = '';
-                document.getElementById('homeUrlInput').value = '';
-                document.getElementById('bannerUrlInput').value = '';
-                document.getElementById('passwordInput').value = '';
-                
-                alert('배너가 성공적으로 등록되었습니다!');
-                closeRegisterPanel(); 
-                await new Promise(resolve => setTimeout(resolve, 500));
-                loadEntries(); 
-            } else {
-                alert('등록 실패: ' + result.message);
-            }
-            
-            submitButton.disabled = false;
-            submitButton.innerText = '등록하기';
-        }
-
-        // ----------------------------------------------------
-        // 3. 렌더링 및 패널 관리 함수
-        // ----------------------------------------------------
-        
-        async function loadEntries() {
-            const entries = await fetchEntriesFromSheet();
-            entries.reverse(); 
-            
-            // 데이터 로드 후, 컨테이너를 비우고 렌더링 시작 
-            entryListContainer.innerHTML = ''; 
-            
-            renderEntries(entries);
-        }
-
-        function renderEntries(entries) {
-            
-            if (initialLoadingMessage) {
-                initialLoadingMessage.style.display = 'none';
-            }
-            
-            if (!entries || entries.length === 0) {
-                entryListContainer.innerHTML = `
-                    <p class="status-message" style="color: #aaa;">
-                        아직 등록된 배너가 없습니다.<br>
-                        '내 배너 등록하기' 버튼을 눌러 첫 배너를 등록해주세요!
-                    </p>
-                `;
-                document.querySelector('.container').classList.remove('editing-mode');
-                return;
-            }
-            
-            const containerDiv = document.querySelector('.container');
-            if (isEditingMode) {
-                containerDiv.classList.add('editing-mode');
-                openActionButton.innerText = '🛠️ 수정/삭제 취소';
-                openActionButton.classList.add('cancel-mode');
-                
-                 const message = document.createElement('p');
-                 message.className = 'info-message-small';
-                 message.innerText = '수정/삭제할 배너를 목록에서 클릭해주세요.';
-                 entryListContainer.appendChild(message);
-            } else {
-                containerDiv.classList.remove('editing-mode');
-                openActionButton.innerText = '🛠️ 수정/삭제하기';
-                openActionButton.classList.remove('cancel-mode');
-            }
-
-            entries.forEach(entry => {
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'entry';
-                entryDiv.setAttribute('data-id', entry.id);
-                
-                entryDiv.onclick = function() { 
-                    if (isEditingMode) {
-                        openPasswordCheckModal(entry.id);
-                    }
-                };
-                
-                const bannerImg = `<img src="${entry.bannerUrl}" class="entry-banner" alt="배너 이미지" onerror="this.src='https://i.imgur.com/rN5F2yS.png'; this.onerror=null;">`; 
-                
-                let nameHtml;
-                let linkTagStart;
-                
-                if (isEditingMode) {
-                    // 수정 모드: <span> 태그로 텍스트만 표시하고, 클릭 이벤트는 부모 Div가 처리함
-                    nameHtml = `<span class="entry-name">${entry.name}</span>`;
-                    // 배너 이미지를 감싸는 링크도 클릭 이벤트를 막음
-                    linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;" onclick="event.preventDefault(); openPasswordCheckModal(${entry.id});">`;
-                } else {
-                    // 일반 모드: <a> 태그로 링크 연결
-                    nameHtml = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; color: inherit;">${entry.name}</a>`;
-                    linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;">`;
-                }
-
-
-                entryDiv.innerHTML = `
-                    <div class="entry-banner-area">
-                        ${linkTagStart}
-                            ${bannerImg}
-                        </a>
-                    </div>
-                    <div class="entry-header">
-                        <div class="entry-info">
-                            ${nameHtml}
-                        </div>
-                    </div>
-                `;
-                
-                // isEditingMode일 때, 이름 텍스트 자체를 클릭하면 수정 모달을 띄우도록 이벤트 추가 
-                if (isEditingMode) {
-                     const nameElement = entryDiv.querySelector('.entry-name');
-                     if (nameElement) {
-                         nameElement.onclick = function(e) {
-                             e.stopPropagation(); 
-                             openPasswordCheckModal(entry.id);
-                         };
-                         nameElement.style.cursor = 'pointer'; 
-                     }
-                 }
-
-
-                entryListContainer.appendChild(entryDiv);
-                
-                if (currentEntryId && String(entry.id) === String(currentEntryId)) {
-                    entryDiv.classList.add('selected');
-                }
-            });
-        }
-        
-        // 등록 패널과 모달만 닫고, 수정모드는 유지/목록 새로고침은 하지 않음
-        function closeActionModalsAndPanels() {
-            document.getElementById('passwordCheckModal').style.display = 'none';
-            document.getElementById('actionPanel').style.display = 'none';
-        }
-
-        // 등록 패널 열기/닫기 (수정)
-        function openRegisterPanel() {
-            closeActionModalsAndPanels(); 
-            document.getElementById('registerPanel').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' }); 
-        }
-        
-        function closeRegisterPanel() {
-            document.getElementById('registerPanel').style.display = 'none';
-        }
-
-        // ----------------------------------------------------
-        // 4. 통합 수정/삭제 패널 함수 (수정/취소 로직 포함)
-        // ----------------------------------------------------
-        
-        function openCombinedActionPanel() {
+            showCustomAlert('배너가 성공적으로 등록되었습니다!'); // ⬅️ alert 대체
             closeRegisterPanel(); 
+            await new Promise(resolve => setTimeout(resolve, 500));
+            loadEntries(); 
+        } else {
+            showCustomAlert('등록 실패: ' + result.message, false); // ⬅️ alert 대체
+        }
+        
+        submitButton.disabled = false;
+        submitButton.innerText = '등록하기';
+    }
+
+    // ----------------------------------------------------
+    // 3. 렌더링 및 패널 관리 함수 (생략... 변경 없음)
+    // ----------------------------------------------------
+    
+    async function loadEntries() {
+        const entries = await fetchEntriesFromSheet();
+        entries.reverse(); 
+        
+        entryListContainer.innerHTML = ''; 
+        
+        renderEntries(entries);
+    }
+
+    function renderEntries(entries) {
+        
+        if (initialLoadingMessage) {
+            initialLoadingMessage.style.display = 'none';
+        }
+        
+        if (!entries || entries.length === 0) {
+            entryListContainer.innerHTML = `
+                <p class="status-message" style="color: #aaa;">
+                    아직 등록된 배너가 없습니다.<br>
+                    '내 배너 등록하기' 버튼을 눌러 첫 배너를 등록해주세요!
+                </p>
+            `;
+            document.querySelector('.container').classList.remove('editing-mode');
+            return;
+        }
+        
+        const containerDiv = document.querySelector('.container');
+        if (isEditingMode) {
+            containerDiv.classList.add('editing-mode');
+            openActionButton.innerText = '🛠️ 수정/삭제 취소';
+            openActionButton.classList.add('cancel-mode');
             
-            // 모드 취소 기능 (딜레이 발생 지점)
+             const message = document.createElement('p');
+             message.className = 'info-message-small';
+             message.innerText = '수정/삭제할 배너를 목록에서 클릭해주세요.';
+             entryListContainer.appendChild(message);
+        } else {
+            containerDiv.classList.remove('editing-mode');
+            openActionButton.innerText = '🛠️ 수정/삭제하기';
+            openActionButton.classList.remove('cancel-mode');
+        }
+
+        entries.forEach(entry => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'entry';
+            entryDiv.setAttribute('data-id', entry.id);
+            
+            entryDiv.onclick = function() { 
+                if (isEditingMode) {
+                    openPasswordCheckModal(entry.id);
+                }
+            };
+            
+            const bannerImg = `<img src="${entry.bannerUrl}" class="entry-banner" alt="배너 이미지" onerror="this.src='https://i.imgur.com/rN5F2yS.png'; this.onerror=null;">`; 
+            
+            let nameHtml;
+            let linkTagStart;
+            
             if (isEditingMode) {
-                openActionButton.disabled = true; // 버튼 비활성화하여 중복 클릭 방지
-                closeActionPanel(); 
-                return;
+                // 수정 모드: <span> 태그로 텍스트만 표시하고, 클릭 이벤트는 부모 Div가 처리함
+                nameHtml = `<span class="entry-name">${entry.name}</span>`;
+                // 배너 이미지를 감싸는 링크도 클릭 이벤트를 막음
+                linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;" onclick="event.preventDefault(); openPasswordCheckModal(${entry.id});">`;
+            } else {
+                // 일반 모드: <a> 태그로 링크 연결
+                nameHtml = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; color: inherit;">${entry.name}</a>`;
+                linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;">`;
             }
-            
-            // 모드 활성화 시작
-            closeActionModalsAndPanels(); // 등록/액션 패널 및 모달만 닫음
-            
-            currentEntryId = null;
-            currentPassword = null;
-            isEditingMode = true; // 수정 모드 활성화
-            
-            document.getElementById('modalError').innerText = '';
-            
-            // 핵심: 모드 활성화 시에도 컨테이너 비우고 렌더링
-            entryListContainer.innerHTML = '';
-            renderEntries(allEntries); 
-        }
 
-        function closeActionPanel() {
-            closeActionModalsAndPanels(); // 모달/패널 숨김
+
+            entryDiv.innerHTML = `
+                <div class="entry-banner-area">
+                    ${linkTagStart}
+                        ${bannerImg}
+                    </a>
+                </div>
+                <div class="entry-header">
+                    <div class="entry-info">
+                        ${nameHtml}
+                    </div>
+                </div>
+            `;
             
-            currentEntryId = null;
-            currentPassword = null;
-            isEditingMode = false; // 모드 비활성화
+            // isEditingMode일 때, 이름 텍스트 자체를 클릭하면 수정 모달을 띄우도록 이벤트 추가 
+            if (isEditingMode) {
+                const nameElement = entryDiv.querySelector('.entry-name');
+                if (nameElement) {
+                    nameElement.onclick = function(e) {
+                        e.stopPropagation(); 
+                        openPasswordCheckModal(entry.id);
+                    };
+                    nameElement.style.cursor = 'pointer'; 
+                }
+            }
 
-            // 작업 취소 중 메시지 출력 및 loadEntries 호출
-            entryListContainer.innerHTML = `<p class="status-message">작업 취소하는 중...</p>`;
 
-            // 상태 초기화 후 다시 렌더링 (loadEntries()가 비동기 작업을 수행)
-            // 작업이 완료되면 버튼을 다시 활성화합니다.
-            loadEntries().finally(() => {
-                 openActionButton.disabled = false; 
-            });
+            entryListContainer.appendChild(entryDiv);
+            
+            if (currentEntryId && String(entry.id) === String(currentEntryId)) {
+                entryDiv.classList.add('selected');
+            }
+        });
+    }
+    
+    // 등록 패널과 모달만 닫고, 수정모드는 유지/목록 새로고침은 하지 않음
+    function closeActionModalsAndPanels() {
+        document.getElementById('passwordCheckModal').style.display = 'none';
+        document.getElementById('actionPanel').style.display = 'none';
+    }
+
+    // 등록 패널 열기/닫기 (수정)
+    function openRegisterPanel() {
+        closeActionModalsAndPanels(); 
+        document.getElementById('registerPanel').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    }
+    
+    function closeRegisterPanel() {
+        document.getElementById('registerPanel').style.display = 'none';
+    }
+
+    // ----------------------------------------------------
+    // 4. 통합 수정/삭제 패널 함수 (수정/취소 로직 포함)
+    // ----------------------------------------------------
+    
+    function openCombinedActionPanel() {
+        closeRegisterPanel(); 
+        
+        // 모드 취소 기능 (딜레이 발생 지점)
+        if (isEditingMode) {
+            openActionButton.disabled = true; // 버튼 비활성화하여 중복 클릭 방지
+            closeActionPanel(); 
+            return;
         }
         
-        // ----------------------------------------------------
-        // 5. 비밀번호 확인 모달 관리 함수 (수정)
-        // ----------------------------------------------------
+        // 모드 활성화 시작
+        closeActionModalsAndPanels(); // 등록/액션 패널 및 모달만 닫음
+        
+        currentEntryId = null;
+        currentPassword = null;
+        isEditingMode = true; // 수정 모드 활성화
+        
+        document.getElementById('modalError').innerText = '';
+        
+        // 핵심: 모드 활성화 시에도 컨테이너 비우고 렌더링
+        entryListContainer.innerHTML = '';
+        renderEntries(allEntries); 
+    }
 
-        function openPasswordCheckModal(id) {
-            if (!isEditingMode) return; 
+    function closeActionPanel() {
+        closeActionModalsAndPanels(); // 모달/패널 숨김
+        
+        currentEntryId = null;
+        currentPassword = null;
+        isEditingMode = false; // 모드 비활성화
 
-            currentEntryId = id;
-            const entry = allEntries.find(e => String(e.id) === String(id));
-            
-            if (!entry) {
-                alert('선택된 배너를 찾을 수 없습니다.');
-                closeActionPanel();
-                return;
-            }
-            
-            closeActionModalsAndPanels(); 
-            
-            document.getElementById('modalPasswordInput').value = '';
-            document.getElementById('modalError').innerText = '';
-            document.getElementById('passwordCheckTarget').innerText = `'${entry.name}' 비밀번호를 입력해주세요.`;
-            document.getElementById('passwordCheckModal').style.display = 'block';
-            
-            // 비밀번호 확인 모달이 열릴 때도 컨테이너 비우고 렌더링
-            entryListContainer.innerHTML = '';
-            renderEntries(allEntries); 
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        // 작업 취소 중 메시지 출력 및 loadEntries 호출
+        entryListContainer.innerHTML = `<p class="status-message">작업 취소하는 중...</p>`;
+
+        // 상태 초기화 후 다시 렌더링 (loadEntries()가 비동기 작업을 수행)
+        // 작업이 완료되면 버튼을 다시 활성화합니다.
+        loadEntries().finally(() => {
+             openActionButton.disabled = false; 
+        });
+    }
+    
+    // ----------------------------------------------------
+    // 5. 비밀번호 확인 모달 관리 함수 (수정)
+    // ----------------------------------------------------
+
+    function openPasswordCheckModal(id) {
+        if (!isEditingMode) return; 
+
+        currentEntryId = id;
+        const entry = allEntries.find(e => String(e.id) === String(id));
+        
+        if (!entry) {
+            showCustomAlert('선택된 배너를 찾을 수 없습니다.', false); // ⬅️ alert 대체
+            closeActionPanel();
+            return;
         }
         
-        async function checkPassword() {
-            const password = document.getElementById('modalPasswordInput').value.trim();
-            const errorMsg = document.getElementById('modalError');
-            
-            if (!password) {
-                errorMsg.innerText = '비밀번호를 입력해주세요.';
-                return;
-            }
+        closeActionModalsAndPanels(); 
+        
+        document.getElementById('modalPasswordInput').value = '';
+        document.getElementById('modalError').innerText = '';
+        document.getElementById('passwordCheckTarget').innerText = `'${entry.name}' 비밀번호를 입력해주세요.`;
+        document.getElementById('passwordCheckModal').style.display = 'block';
+        
+        // 비밀번호 확인 모달이 열릴 때도 컨테이너 비우고 렌더링
+        entryListContainer.innerHTML = '';
+        renderEntries(allEntries); 
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    }
+    
+    async function checkPassword() {
+        const password = document.getElementById('modalPasswordInput').value.trim();
+        const errorMsg = document.getElementById('modalError');
+        
+        if (!password) {
+            errorMsg.innerText = '비밀번호를 입력해주세요.';
+            return;
+        }
 
-            const entry = allEntries.find(e => String(e.id) === String(currentEntryId));
-            
-            if (!entry || entry.password !== password) {
-                errorMsg.innerText = '비밀번호가 일치하지 않습니다.';
-                return;
-            }
-            
-            currentPassword = password; 
+        // ⭐️ 서버에서 비밀번호 일치 여부를 확인할 것이므로, 여기서는 검증 로직을 제거합니다. ⭐️
+        // (Apps Script의 PUT/DELETE 호출 시 비밀번호를 전송하면 됩니다.)
+        
+        currentPassword = password; // ⬅️ 입력된 평문 비밀번호를 저장합니다.
+        
+        const entry = allEntries.find(e => String(e.id) === String(currentEntryId));
+        if (entry) {
             showEditDeleteForm(entry);
+        } else {
+             errorMsg.innerText = '배너 정보를 찾을 수 없습니다.';
+        }
+    }
+    
+    function showEditDeleteForm(entry) {
+        document.getElementById('passwordCheckModal').style.display = 'none';
+        
+        document.getElementById('panelTitle').innerText = `'${entry.name}' 수정/삭제`;
+        document.getElementById('editHomeUrlInput').value = entry.homeUrl;
+        document.getElementById('editBannerUrlInput').value = entry.bannerUrl;
+        
+        document.getElementById('actionPanel').style.display = 'block';
+    }
+
+    // ----------------------------------------------------
+    // 6. 수정 및 삭제 처리
+    // ----------------------------------------------------
+    
+    async function saveEdit() {
+        const newHomeUrl = document.getElementById('editHomeUrlInput').value.trim();
+        const newBannerUrl = document.getElementById('editBannerUrlInput').value.trim();
+
+        if (!newHomeUrl || !newBannerUrl) {
+            showCustomAlert('홈 주소와 배너 이미지 주소는 필수 입력 항목입니다.', false); // ⬅️ alert 대체
+            return;
         }
         
-        function showEditDeleteForm(entry) {
-            document.getElementById('passwordCheckModal').style.display = 'none';
-            
-            document.getElementById('panelTitle').innerText = `'${entry.name}' 수정/삭제`;
-            document.getElementById('editHomeUrlInput').value = entry.homeUrl;
-            document.getElementById('editBannerUrlInput').value = entry.bannerUrl;
-            
-            document.getElementById('actionPanel').style.display = 'block';
-        }
+        const saveButton = document.getElementById('saveEditButton');
+        saveButton.disabled = true;
+        saveButton.innerText = '저장 중...';
 
-        // ----------------------------------------------------
-        // 6. 수정 및 삭제 처리 (이전과 동일)
-        // ----------------------------------------------------
+
+        const dataToSend = {
+            id: currentEntryId,
+            password: currentPassword, // ⬅️ 서버로 평문 비밀번호 전송 (서버에서 해싱 후 검증)
+            homeUrl: newHomeUrl,
+            bannerUrl: newBannerUrl
+        };
         
-        async function saveEdit() {
-            const newHomeUrl = document.getElementById('editHomeUrlInput').value.trim();
-            const newBannerUrl = document.getElementById('editBannerUrlInput').value.trim();
+        const result = await sendDataToSheet(dataToSend, 'PUT'); 
 
-            if (!newHomeUrl || !newBannerUrl) {
-                alert('홈 주소와 배너 이미지 주소는 필수 입력 항목입니다.');
-                return;
-            }
-            
-            const saveButton = document.getElementById('saveEditButton');
-            saveButton.disabled = true;
-            saveButton.innerText = '저장 중...';
-
-
-            const dataToSend = {
-                id: currentEntryId,
-                password: currentPassword, 
-                homeUrl: newHomeUrl,
-                bannerUrl: newBannerUrl
-            };
-            
-            const result = await sendDataToSheet(dataToSend, 'PUT'); 
-
-            if (result.success) {
-                closeActionPanel();
-                alert('배너 정보가 성공적으로 수정되었습니다.');
-            } else {
-                alert('수정 실패: ' + result.message);
-            }
-            
-            saveButton.disabled = false;
-            saveButton.innerText = '수정 저장';
+        if (result.success) {
+            closeActionPanel();
+            showCustomAlert('배너 정보가 성공적으로 수정되었습니다.'); // ⬅️ alert 대체
+        } else {
+            showCustomAlert('수정 실패: ' + result.message, false); // ⬅️ alert 대체
         }
         
-        function confirmDelete() {
-             if (!confirm('정말로 이 배너를 삭제하겠습니까?')) {
-                 return;
-             }
-             deleteEntry();
+        saveButton.disabled = false;
+        saveButton.innerText = '수정 저장';
+    }
+    
+    function confirmDelete() {
+         if (!confirm('정말로 이 배너를 삭제하겠습니까?')) {
+             return;
+         }
+         deleteEntry();
+    }
+
+    async function deleteEntry() {
+        const deleteButton = document.getElementById('deleteEntryButton');
+        deleteButton.disabled = true;
+        deleteButton.innerText = '삭제 중...';
+
+        const dataToSend = {
+            id: currentEntryId,
+            password: currentPassword // ⬅️ 서버로 평문 비밀번호 전송 (서버에서 해싱 후 검증)
+        };
+
+        const result = await sendDataToSheet(dataToSend, 'DELETE');
+
+        if (result.success) {
+            closeActionPanel();
+            showCustomAlert('배너가 성공적으로 삭제되었습니다.'); // ⬅️ alert 대체
+        } else {
+            showCustomAlert('삭제 실패: ' + result.message, false); // ⬅️ alert 대체
         }
-
-        async function deleteEntry() {
-            const deleteButton = document.getElementById('deleteEntryButton');
-            deleteButton.disabled = true;
-            deleteButton.innerText = '삭제 중...';
-
-            const dataToSend = {
-                id: currentEntryId,
-                password: currentPassword 
-            };
-
-            const result = await sendDataToSheet(dataToSend, 'DELETE');
-
-            if (result.success) {
-                closeActionPanel();
-                alert('배너가 성공적으로 삭제되었습니다.');
-            } else {
-                alert('삭제 실패: ' + result.message);
-            }
-            
-            deleteButton.disabled = false;
-            deleteButton.innerText = '항목 삭제';
-        }
-    </script>
+        
+        deleteButton.disabled = false;
+        deleteButton.innerText = '항목 삭제';
+    }
+</script>
 </body>
 </html>
+
 
 
 
