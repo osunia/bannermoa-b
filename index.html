@@ -353,19 +353,19 @@ function newColour() {
             gap: 10px 10px; 
         }
         
-        /* ⭐️ 추가된 스타일: 작은 안내 메시지 폰트 ⭐️ */
+        /* 수정/삭제 안내 메시지 폰트 */
         .info-message-small {
             text-align: center; 
             color: #d9534f; 
             font-weight: bold; 
             margin: 15px 0 30px 0;
-            font-size: 0.9em; /* 폰트 크기 조정 */
+            font-size: 0.9em; 
         }
         
-        /* ⭐️ 추가된 스타일: 작업 취소 중 메시지 스타일 ⭐️ */
+        /* 작업 취소 중 메시지 스타일 */
         .status-message {
             text-align: center; 
-            color: #aaa; /* 회색 */
+            color: #aaa; 
             font-weight: bold; 
             margin: 50px 0;
             font-size: 1em; 
@@ -650,7 +650,7 @@ function newColour() {
         </div>
         
         <div id="entryListContainer">
-            <p style="text-align: center; color: #aaa; margin: 50px 0;">배너를 불러오는 중...</p>
+            <p id="initialLoadingMessage" class="status-message">배너를 불러오는 중...</p>
         </div>
 
         <div class="footer">
@@ -683,6 +683,8 @@ function newColour() {
         let allEntries = []; 
         const openActionButton = document.getElementById('openActionButton'); 
         const entryListContainer = document.getElementById('entryListContainer');
+        const initialLoadingMessage = document.getElementById('initialLoadingMessage');
+
 
         // ----------------------------------------------------
         // 1. 데이터 통신 함수 (이전과 동일)
@@ -773,21 +775,30 @@ function newColour() {
         // ----------------------------------------------------
         
         async function loadEntries() {
-            // 초기 로딩 메시지 제거
-            entryListContainer.innerHTML = '';
+            // ⭐️ 수정: 컨테이너 초기화는 loadEntries 끝에서 renderEntries 직전에 수행합니다. ⭐️
             
             const entries = await fetchEntriesFromSheet();
             entries.reverse(); 
+            
+            // ⭐️ 수정: 데이터 로드 후, 컨테이너를 비우고 렌더링 시작 ⭐️
+            entryListContainer.innerHTML = ''; 
             
             renderEntries(entries);
         }
 
         function renderEntries(entries) {
-            entryListContainer.innerHTML = '';
             
+            // ⭐️ 수정: 초기 로딩 메시지(initialLoadingMessage)가 있다면 숨김 ⭐️
+            if (initialLoadingMessage) {
+                initialLoadingMessage.style.display = 'none';
+            }
+            
+            // 이전에 '작업 취소 중...' 메시지를 덮어쓰기 위해 컨테이너를 비우는 작업은 loadEntries에서 수행했습니다.
+            // 여기서는 실제 항목 또는 빈 목록 메시지를 추가합니다.
+
             if (!entries || entries.length === 0) {
                 entryListContainer.innerHTML = `
-                    <p style="text-align: center; color: #aaa; margin: 50px 0;">
+                    <p class="status-message" style="color: #aaa;">
                         아직 등록된 배너가 없습니다.<br>
                         '내 배너 등록하기' 버튼을 눌러 첫 항목을 등록해주세요!
                     </p>
@@ -802,7 +813,6 @@ function newColour() {
                 openActionButton.innerText = '수정/삭제 취소';
                 openActionButton.classList.add('cancel-mode');
                 
-                // ⭐️ 수정된 부분: 폰트 크기 조정을 위해 info-message-small 클래스 사용 ⭐️
                  const message = document.createElement('p');
                  message.className = 'info-message-small';
                  message.innerText = '🛠️ 수정/삭제할 배너를 목록에서 직접 클릭해주세요.';
@@ -887,8 +897,10 @@ function newColour() {
             isEditingMode = true; // 수정 모드 활성화
             
             document.getElementById('modalError').innerText = '';
-
-            renderEntries(allEntries); // 모드 활성화된 상태로 렌더링
+            
+            // ⭐️ 수정: 모드 활성화 시에도 컨테이너 비우기 ⭐️
+            entryListContainer.innerHTML = '';
+            renderEntries(allEntries); 
         }
 
         function closeActionPanel() {
@@ -898,8 +910,8 @@ function newColour() {
             currentEntryId = null;
             currentPassword = null;
             isEditingMode = false; // 모드 비활성화
-            
-            // ⭐️ 추가된 부분: 작업 취소 중 메시지 출력 ⭐️
+
+            // ⭐️ 수정: 작업 취소 중 메시지 출력 및 loadEntries 호출 ⭐️
             entryListContainer.innerHTML = `<p class="status-message">작업 취소하는 중...</p>`;
 
             // 상태 초기화 후 다시 렌더링 (loadEntries()가 비동기 작업을 수행)
