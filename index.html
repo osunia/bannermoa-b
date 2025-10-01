@@ -854,12 +854,22 @@ function newColour() {
                 };
                 
                 const bannerImg = `<img src="${entry.bannerUrl}" class="entry-banner" alt="배너 이미지" onerror="this.src='https://i.imgur.com/rN5F2yS.png'; this.onerror=null;">`; 
-                const nameHtml = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; color: inherit;">${entry.name}</a>`;
                 
-                let linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;">`;
+                // ⭐️ 수정: isEditingMode에 따라 nameHtml을 다르게 구성 ⭐️
+                let nameHtml;
+                let linkTagStart;
+                
                 if (isEditingMode) {
+                    // 수정 모드: <span> 태그로 텍스트만 표시하고, 클릭 이벤트는 부모 Div가 처리함
+                    nameHtml = `<span class="entry-name">${entry.name}</span>`;
+                    // 배너 이미지를 감싸는 링크도 클릭 이벤트를 막음
                     linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;" onclick="event.preventDefault(); openPasswordCheckModal(${entry.id});">`;
+                } else {
+                    // 일반 모드: <a> 태그로 링크 연결
+                    nameHtml = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; color: inherit;">${entry.name}</a>`;
+                    linkTagStart = `<a href="${entry.homeUrl}" target="_blank" style="text-decoration: none; display: inline-block;">`;
                 }
+
 
                 entryDiv.innerHTML = `
                     <div class="entry-banner-area">
@@ -869,10 +879,23 @@ function newColour() {
                     </div>
                     <div class="entry-header">
                         <div class="entry-info">
-                            <span class="entry-name">${nameHtml}</span> 
+                            ${nameHtml}
                         </div>
                     </div>
                 `;
+                
+                // ⭐️ 추가: isEditingMode일 때, 이름 텍스트 자체를 클릭하면 수정 모달을 띄우도록 이벤트 추가 ⭐️
+                if (isEditingMode) {
+                     const nameElement = entryDiv.querySelector('.entry-name');
+                     if (nameElement) {
+                         nameElement.onclick = function(e) {
+                             e.stopPropagation(); // 이름 텍스트 클릭 시, 부모 div의 클릭 이벤트 중복 방지 (선택적으로)
+                             openPasswordCheckModal(entry.id);
+                         };
+                         nameElement.style.cursor = 'pointer'; // 클릭 가능함을 시각적으로 보여줌
+                     }
+                 }
+
 
                 entryListContainer.appendChild(entryDiv);
                 
@@ -882,7 +905,7 @@ function newColour() {
             });
         }
         
-        // ⭐️ 추가: 등록 패널과 모달만 닫고, 수정모드는 유지/목록 새로고침은 하지 않음 ⭐️
+        // 등록 패널과 모달만 닫고, 수정모드는 유지/목록 새로고침은 하지 않음
         function closeActionModalsAndPanels() {
             document.getElementById('passwordCheckModal').style.display = 'none';
             document.getElementById('actionPanel').style.display = 'none';
@@ -890,7 +913,7 @@ function newColour() {
 
         // 등록 패널 열기/닫기 (수정)
         function openRegisterPanel() {
-            closeActionModalsAndPanels(); // ⭐️ 수정: 불필요한 closeActionPanel() 대신 사용 ⭐️
+            closeActionModalsAndPanels(); 
             document.getElementById('registerPanel').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
@@ -909,7 +932,7 @@ function newColour() {
             // 모드 취소 기능 (딜레이 발생 지점)
             if (isEditingMode) {
                 openActionButton.disabled = true; // 버튼 비활성화하여 중복 클릭 방지
-                closeActionPanel(); // ⭐️ 수정: 여기서만 closeActionPanel() 호출 ⭐️
+                closeActionPanel(); 
                 return;
             }
             
@@ -960,7 +983,7 @@ function newColour() {
                 return;
             }
             
-            closeActionModalsAndPanels(); // ⭐️ 수정: 불필요한 패널 닫기 대신 사용 ⭐️
+            closeActionModalsAndPanels(); 
             
             document.getElementById('modalPasswordInput').value = '';
             document.getElementById('modalError').innerText = '';
