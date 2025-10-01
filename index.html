@@ -293,20 +293,14 @@ function newColour() {
             border-radius: 4px;
         }
 
-        h2.section-title {
-            color: #645d55;
-            margin: 25px 0 15px 0;
-            font-size: 1.5em;
-            text-align: center;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 5px;
-            display: inline-block;
-        }
+        /* -------------------------------------- */
+        /* 이 영역의 .section-title CSS를 제거했습니다. */
+        /* -------------------------------------- */
         
         /* 버튼 배열 (가로) */
         .register-button-area {
             text-align: center;
-            margin: 15px 0 25px 0; 
+            margin: 0 0 25px 0; /* 제목 제거에 맞춰 상단 마진을 줄였습니다. */
             display: flex; 
             justify-content: center;
             gap: 5px; 
@@ -622,8 +616,6 @@ function newColour() {
         </div>
 
 
-        <h2 class="section-title">등록된 배너 목록</h2>
-        
         <div class="register-button-area">
             <button id="openRegisterModal" onclick="openRegisterPanel()">✨ 내 배너 등록하기</button>
             <button id="openActionButton" onclick="openCombinedActionPanel()">🛠️ 수정/삭제하기</button>
