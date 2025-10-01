@@ -322,16 +322,16 @@ function newColour() {
             transform: translateY(-1px); 
         }
         
-        /* ID별 색상 재정의 (투명 배경 강제 적용) */
+        /* ⭐️ 변경: 등록/수정 버튼 색상 통일 ⭐️ */
         #openRegisterModal {
             background-color: transparent !important;
-            border: 1px solid #c9b8a8;
+            border: 1px solid #ab9172; /* 변경 */
         }
         
         #openActionButton { 
             background-color: transparent !important;
-            border: 1px solid #a8c9b8; 
-            color: #333;
+            border: 1px solid #ab9172; /* 변경 */
+            color: #444; /* 글자색은 유지 */
         }
         
         /* 수정 모드 취소 버튼 스타일 */
@@ -498,8 +498,12 @@ function newColour() {
             font-size: 1em;
         }
 
+        /* ⭐️ 변경: 비밀번호 확인 버튼 색상 통일 ⭐️ */
         #checkPasswordButton {
-            background-color: #ab9172
+            background-color: #ab9172; 
+        }
+        #checkPasswordButton:hover {
+            background-color: #927c65; /* 호버 색상 추가 */
         }
         
         #saveEditButton {
@@ -552,10 +556,11 @@ function newColour() {
             font-size: 0.9em;
         }
 
+        /* ⭐️ 변경: 등록하기 버튼 색상 통일 ⭐️ */
         button.modal-submit-button { 
             width: 100%;
             padding: 12px;
-            background-color: #ab9172;
+            background-color: #ab9172; 
             color: white;
             border: none;
             border-radius: 4px;
@@ -567,7 +572,7 @@ function newColour() {
         }
 
         button.modal-submit-button:hover:not(:disabled) {
-            background-color: #4cae4c;
+            background-color: #927c65; /* 호버 색상 추가 */
         }
         
         button.modal-submit-button:disabled {
@@ -775,12 +780,10 @@ function newColour() {
         // ----------------------------------------------------
         
         async function loadEntries() {
-            // ⭐️ 수정: 컨테이너 초기화는 loadEntries 끝에서 renderEntries 직전에 수행합니다. ⭐️
-            
             const entries = await fetchEntriesFromSheet();
             entries.reverse(); 
             
-            // ⭐️ 수정: 데이터 로드 후, 컨테이너를 비우고 렌더링 시작 ⭐️
+            // 데이터 로드 후, 컨테이너를 비우고 렌더링 시작 
             entryListContainer.innerHTML = ''; 
             
             renderEntries(entries);
@@ -788,14 +791,10 @@ function newColour() {
 
         function renderEntries(entries) {
             
-            // ⭐️ 수정: 초기 로딩 메시지(initialLoadingMessage)가 있다면 숨김 ⭐️
             if (initialLoadingMessage) {
                 initialLoadingMessage.style.display = 'none';
             }
             
-            // 이전에 '작업 취소 중...' 메시지를 덮어쓰기 위해 컨테이너를 비우는 작업은 loadEntries에서 수행했습니다.
-            // 여기서는 실제 항목 또는 빈 목록 메시지를 추가합니다.
-
             if (!entries || entries.length === 0) {
                 entryListContainer.innerHTML = `
                     <p class="status-message" style="color: #aaa;">
@@ -898,7 +897,7 @@ function newColour() {
             
             document.getElementById('modalError').innerText = '';
             
-            // ⭐️ 수정: 모드 활성화 시에도 컨테이너 비우기 ⭐️
+            // ⭐️ 핵심 수정: 모드 활성화 시에도 컨테이너 비우기 ⭐️
             entryListContainer.innerHTML = '';
             renderEntries(allEntries); 
         }
@@ -911,7 +910,7 @@ function newColour() {
             currentPassword = null;
             isEditingMode = false; // 모드 비활성화
 
-            // ⭐️ 수정: 작업 취소 중 메시지 출력 및 loadEntries 호출 ⭐️
+            // 작업 취소 중 메시지 출력 및 loadEntries 호출
             entryListContainer.innerHTML = `<p class="status-message">작업 취소하는 중...</p>`;
 
             // 상태 초기화 후 다시 렌더링 (loadEntries()가 비동기 작업을 수행)
@@ -945,6 +944,8 @@ function newColour() {
             document.getElementById('passwordCheckTarget').innerText = `'${entry.name}' 항목의 비밀번호를 입력해주세요.`;
             document.getElementById('passwordCheckModal').style.display = 'block';
             
+            // ⭐️ 핵심 수정: 비밀번호 확인 모달이 열릴 때도 컨테이너 비우고 렌더링 ⭐️
+            entryListContainer.innerHTML = '';
             renderEntries(allEntries); 
             
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
@@ -1050,5 +1051,3 @@ function newColour() {
     </script>
 </body>
 </html>
-
-
