@@ -754,14 +754,13 @@ document.addEventListener('contextmenu', function(e) {
     let allEntries = [];        
     const openActionButton = document.getElementById('openActionButton'); 
     const entryListContainer = document.getElementById('entryListContainer');
-    // HTML 구조를 수정했으므로, 이 요소는 이제 entryListContainer 밖에 있습니다.
     const initialLoadingMessage = document.getElementById('initialLoadingMessage');
 
     // ⭐️ 로딩 애니메이션 전역 변수 추가 ⭐️
     let loadingAnimationInterval = null; 
     const DOT_MESSAGES = {
         'LOAD': '배너를 불러오는 중',
-        'REFRESH': '목록을 새로고침하는 중',
+        'CANCEL': '작업을 취소하는 중', // 취소 문구 복원
     };
 
     // ----------------------------------------------------
@@ -772,7 +771,7 @@ document.addEventListener('contextmenu', function(e) {
     /**
      * 로딩 애니메이션 (점 세 개)을 시작합니다.
      * @param {HTMLElement} element - 텍스트를 표시할 HTML 요소.
-     * @param {string} baseMessageKey - DOT_MESSAGES 객체의 키 ('LOAD', 'REFRESH' 등).
+     * @param {string} baseMessageKey - DOT_MESSAGES 객체의 키 ('LOAD', 'CANCEL' 등).
      */
     function startLoadingAnimation(element, baseMessageKey) {
         if (!element) return;
@@ -829,9 +828,10 @@ document.addEventListener('contextmenu', function(e) {
     // 페이지 로딩 완료 후 실행 (window.onload 대체)
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.container').classList.add('loaded');
-        if (!isMobile()) {
-            initializeSparkles(); 
-        }
+        // isMobile() 및 initializeSparkles() 함수는 여기에 없으므로, 코드를 실행하려면 외부 정의가 필요합니다.
+        // if (!isMobile()) {
+        //     initializeSparkles(); 
+        // }
         loadEntries(); 
     });
 
@@ -840,7 +840,7 @@ document.addEventListener('contextmenu', function(e) {
         window.location.href = "https://osunia.github.io/bannermoa/";
         return false; 
     }
-    
+
 
     // ----------------------------------------------------
     // 1. 데이터 통신 함수
@@ -865,7 +865,7 @@ document.addEventListener('contextmenu', function(e) {
             if (initialLoadingMessage) {
                 // ⭐️ 애니메이션 중지 후 오류 메시지 출력 ⭐️
                 stopLoadingAnimation(); 
-                initialLoadingMessage.style.display = 'block'; // 오류 메시지를 보이게 함
+                initialLoadingMessage.style.display = 'block';
                 initialLoadingMessage.innerText = '⚠️ 배너 로딩 중 오류 발생! Apps Script URL 또는 배포 상태를 확인하세요.';
             }
             return [];
@@ -906,7 +906,7 @@ document.addEventListener('contextmenu', function(e) {
         
         const submitButton = document.getElementById('submitEntry');
         submitButton.disabled = true;
-        // submitButton.innerText = '등록 중...'; // 버튼 로딩 애니메이션은 여기서는 생략
+        submitButton.innerText = '등록 중...';
 
         const newEntry = {
             id: Date.now(), 
@@ -944,12 +944,13 @@ document.addEventListener('contextmenu', function(e) {
     async function loadEntries() {
         if (initialLoadingMessage) {
             initialLoadingMessage.style.display = 'block';
+            // ⭐️ 수정: 로드 시작 시 애니메이션 시작 ⭐️
             startLoadingAnimation(initialLoadingMessage, 'LOAD');
         }
         
         const entries = await fetchEntriesFromSheet();
         
-        // 데이터 로드가 완료되면 애니메이션을 중지합니다.
+        // ⭐️ 수정: 데이터 로드가 완료되면 애니메이션 중지 ⭐️
         stopLoadingAnimation(); 
 
         entries.reverse(); 
@@ -962,7 +963,6 @@ document.addEventListener('contextmenu', function(e) {
     function renderEntries(entries) {
         
         if (initialLoadingMessage) {
-            // ⭐️ 수정: 렌더링이 시작되면 로딩 메시지 숨김 ⭐️
             initialLoadingMessage.style.display = 'none';
         }
         
@@ -1107,17 +1107,20 @@ document.addEventListener('contextmenu', function(e) {
         currentPassword = null;
         isEditingMode = false; // 모드 비활성화
 
-        // ⭐️ 수정된 로직: entryListContainer를 비우고, initialLoadingMessage를 다시 표시하며 애니메이션 시작 ⭐️
-        entryListContainer.innerHTML = '';
-        
+        // ⭐️ 수정: 취소 시 로딩 메시지를 DOM에 다시 추가하고 애니메이션 시작 ⭐️
         if (initialLoadingMessage) {
+            // entryListContainer를 비웠으므로, initialLoadingMessage를 다시 추가합니다.
+            // 하지만 HTML 구조상 initialLoadingMessage는 entryListContainer 내부에 있으므로,
+            // entryListContainer를 비운 후 initialLoadingMessage를 다시 삽입해야 합니다.
+            entryListContainer.innerHTML = '';
+            entryListContainer.appendChild(initialLoadingMessage);
             initialLoadingMessage.style.display = 'block';
-            startLoadingAnimation(initialLoadingMessage, 'REFRESH'); 
+            startLoadingAnimation(initialLoadingMessage, 'CANCEL'); // '작업을 취소하는 중' 애니메이션
         }
-        
+
         // 데이터 로드가 완료되면 애니메이션 중지 및 목록 렌더링
         loadEntries().finally(() => {
-            // loadEntries()가 완료되면 initialLoadingMessage는 loadEntries() 내부에서 숨겨집니다.
+            // loadEntries()가 완료되면 initialLoadingMessage는 renderEntries() 내부에서 숨겨집니다.
             openActionButton.disabled = false; 
         });
     }
@@ -1298,6 +1301,7 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
+
 
 
 
