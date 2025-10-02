@@ -713,6 +713,13 @@
         div.style.height=height+"px";
         div.style.width=width+"px";
         div.style.overflow="hidden";
+
+    // ⭐️ 추가: 파티클이 모든 요소 위에 표시되도록 Z-Index를 최대로 설정
+    div.style.zIndex="99999"; 
+    
+    // ⭐️ 추가: 마우스 이벤트를 무시하여 아래에 있는 콘텐츠를 클릭할 수 있도록 설정
+    div.style.pointerEvents = 'none'; 
+        
         return (div);
     }
 
@@ -1248,6 +1255,7 @@
 </script>
 </body>
 </html>
+
 
 
 
