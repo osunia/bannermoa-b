@@ -940,23 +940,23 @@ document.addEventListener('contextmenu', function(e) {
     // ----------------------------------------------------
     
     async function loadEntries() {
-        if (initialLoadingMessage) {
-            initialLoadingMessage.style.display = 'block';
-            // ⭐️ 수정: 메시지를 설정하는 대신 애니메이션을 시작합니다. ⭐️
-            startLoadingAnimation(initialLoadingMessage, 'LOAD');
-        }
-        
-        const entries = await fetchEntriesFromSheet();
-        
-        // ⭐️ 추가: 데이터 로드가 완료되면 애니메이션을 중지합니다. ⭐️
-        stopLoadingAnimation(); 
-
-        entries.reverse(); 
-        
-        entryListContainer.innerHTML = ''; 
-        
-        renderEntries(entries);
+    if (initialLoadingMessage) {
+        initialLoadingMessage.style.display = 'block';
+        // ⭐️ 수정: 메시지를 설정하는 대신 애니메이션을 시작합니다. ⭐️
+        startLoadingAnimation(initialLoadingMessage, 'LOAD');
     }
+    
+    const entries = await fetchEntriesFromSheet();
+    
+    // ⭐️ 추가: 데이터 로드가 완료되면 애니메이션을 중지합니다. ⭐️
+    stopLoadingAnimation(); 
+
+    entries.reverse(); 
+    
+    entryListContainer.innerHTML = ''; 
+    
+    renderEntries(entries);
+}
 
     function renderEntries(entries) {
         
@@ -1105,22 +1105,19 @@ document.addEventListener('contextmenu', function(e) {
         currentPassword = null;
         isEditingMode = false; // 모드 비활성화
 
-    // ⭐️ 수정된 로직: 임시 메시지 요소를 생성하고, DOM에 추가한 후 애니메이션 시작 ⭐️
-    const tempMessageElement = document.createElement('p');
-    tempMessageElement.className = 'status-message';
-    tempMessageElement.id = 'tempLoadingMessage'; // ID를 할당합니다.
-    tempMessageElement.innerText = '목록을 새로고침하는 중...'; // 초기 텍스트 설정
-    
-    // 기존 내용을 비우고 임시 메시지를 표시합니다.
+    // ⭐️ 수정된 로직: entryListContainer를 비우고, initialLoadingMessage를 다시 표시하며 애니메이션 시작 ⭐️
     entryListContainer.innerHTML = '';
-    entryListContainer.appendChild(tempMessageElement);
-
-    // DOM에 추가된 요소를 대상으로 애니메이션을 시작합니다.
-    startLoadingAnimation(tempMessageElement, 'REFRESH'); 
+    
+    // initialLoadingMessage가 entryListContainer 외부에 있으므로 DOM에서 접근하여 처리합니다.
+    if (initialLoadingMessage) {
+        initialLoadingMessage.style.display = 'block';
+        // 'REFRESH' 메시지 애니메이션 시작
+        startLoadingAnimation(initialLoadingMessage, 'REFRESH'); 
+    }
     
     // 데이터 로드가 완료되면 애니메이션 중지 및 목록 렌더링
     loadEntries().finally(() => {
-        // loadEntries() 내부에서 stopLoadingAnimation()이 호출됩니다.
+        // loadEntries()가 완료되면 initialLoadingMessage는 loadEntries() 내부에서 숨겨집니다.
         openActionButton.disabled = false; 
         });
     }
@@ -1302,6 +1299,7 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
+
 
 
 
