@@ -755,11 +755,59 @@ document.addEventListener('contextmenu', function(e) {
     const entryListContainer = document.getElementById('entryListContainer');
     const initialLoadingMessage = document.getElementById('initialLoadingMessage');
 
+    // ⭐️ 로딩 애니메이션 전역 변수 추가 ⭐️
+    let loadingAnimationInterval = null; 
+    const DOT_MESSAGES = {
+        'LOAD': '배너를 불러오는 중',
+        'REFRESH': '목록을 새로고침하는 중',
+        // '작업을 취소하는 중' 대신 '목록을 새로고침하는 중'을 사용합니다.
+    };
 
     // ----------------------------------------------------
     // 0. 안정화 및 유틸리티 함수 (오류 방지)
     // ----------------------------------------------------
     
+    // ⭐️ 로딩 애니메이션 제어 함수 ⭐️
+    /**
+     * 로딩 애니메이션 (점 세 개)을 시작합니다.
+     * @param {HTMLElement} element - 텍스트를 표시할 HTML 요소.
+     * @param {string} baseMessageKey - DOT_MESSAGES 객체의 키 ('LOAD', 'REFRESH' 등).
+     */
+    function startLoadingAnimation(element, baseMessageKey) {
+        if (!element) return;
+        
+        if (loadingAnimationInterval) {
+            clearInterval(loadingAnimationInterval);
+        }
+
+        const baseMessage = DOT_MESSAGES[baseMessageKey];
+        if (!baseMessage) return;
+
+        let dotCount = 0;
+        
+        loadingAnimationInterval = setInterval(() => {
+            // 0, 1, 2, 3 순서로 증가 (0개, 1개, 2개, 3개)
+            dotCount = (dotCount % 4); 
+            
+            const dots = ".".repeat(dotCount);
+            element.innerText = baseMessage + dots;
+            
+            dotCount++;
+        }, 300); // 0.3초마다 반복
+    }
+
+    /**
+     * 로딩 애니메이션을 중지하고 Interval을 제거합니다.
+     */
+    function stopLoadingAnimation() {
+        if (loadingAnimationInterval) {
+            clearInterval(loadingAnimationInterval);
+            loadingAnimationInterval = null;
+        }
+    }
+    // ⭐️ 애니메이션 제어 함수 끝 ⭐️
+
+
     // 커스텀 알림 함수
     function showCustomAlert(message, isSuccess = true) {
         const alertDiv = document.getElementById('customAlert');
@@ -814,7 +862,9 @@ document.addEventListener('contextmenu', function(e) {
         } catch (error) {
             console.error("Apps Script 통신 오류 (GET):", error);
             if (initialLoadingMessage) {
-                 initialLoadingMessage.innerText = '⚠️ 배너 로딩 중 오류 발생! Apps Script URL 또는 배포 상태를 확인하세요.';
+                // ⭐️ 애니메이션 중지 후 오류 메시지 출력 ⭐️
+                stopLoadingAnimation(); 
+                initialLoadingMessage.innerText = '⚠️ 배너 로딩 중 오류 발생! Apps Script URL 또는 배포 상태를 확인하세요.';
             }
             return [];
         }
@@ -854,7 +904,7 @@ document.addEventListener('contextmenu', function(e) {
         
         const submitButton = document.getElementById('submitEntry');
         submitButton.disabled = true;
-        submitButton.innerText = '등록 중...';
+        // submitButton.innerText = '등록 중...'; // 버튼 로딩 애니메이션은 여기서는 생략
 
         const newEntry = {
             id: Date.now(), 
@@ -891,10 +941,16 @@ document.addEventListener('contextmenu', function(e) {
     
     async function loadEntries() {
         if (initialLoadingMessage) {
-             initialLoadingMessage.style.display = 'block';
-             initialLoadingMessage.innerText = '배너를 불러오는 중...';
+            initialLoadingMessage.style.display = 'block';
+            // ⭐️ 수정: 메시지를 설정하는 대신 애니메이션을 시작합니다. ⭐️
+            startLoadingAnimation(initialLoadingMessage, 'LOAD');
         }
+        
         const entries = await fetchEntriesFromSheet();
+        
+        // ⭐️ 추가: 데이터 로드가 완료되면 애니메이션을 중지합니다. ⭐️
+        stopLoadingAnimation(); 
+
         entries.reverse(); 
         
         entryListContainer.innerHTML = ''; 
@@ -1050,8 +1106,13 @@ document.addEventListener('contextmenu', function(e) {
         isEditingMode = false; // 모드 비활성화
 
         // 상태 초기화 후 다시 렌더링 (loadEntries()가 비동기 작업을 수행)
-        entryListContainer.innerHTML = `<p class="status-message">목록을 새로고침하는 중...</p>`;
+        // ⭐️ 수정: 텍스트를 하드 코딩하는 대신 애니메이션을 시작합니다. ⭐️
+        entryListContainer.innerHTML = `<p class="status-message" id="tempLoadingMessage"></p>`;
+        const tempLoadingMessage = document.getElementById('tempLoadingMessage');
+        startLoadingAnimation(tempLoadingMessage, 'REFRESH'); // '목록을 새로고침하는 중' 애니메이션 시작
+        
         loadEntries().finally(() => {
+            // loadEntries가 완료되면 자동으로 애니메이션이 중지됩니다.
             openActionButton.disabled = false; 
         });
     }
@@ -1106,33 +1167,33 @@ document.addEventListener('contextmenu', function(e) {
         checkButton.innerText = '확인 중...';
 
             // ⭐️⭐️ 수정: action을 'VERIFY'로 변경하고 임시 homeUrl/bannerUrl 제거 ⭐️⭐️
-    const dataToSend = {
-        id: currentEntryId,
-        password: password,
-    };
-    
-    const result = await sendDataToSheet(dataToSend, 'VERIFY'); // ⬅️ 'VERIFY' 액션 사용
-
-    checkButton.disabled = false;
-    checkButton.innerText = '비밀번호 확인';
-
-    if (result.success) {
-        // ⭐️⭐️ 중요: 검증된 비밀번호를 전역 변수에 저장 ⭐️⭐️
-        currentPassword = password; 
+        const dataToSend = {
+            id: currentEntryId,
+            password: password,
+        };
         
-        const entry = allEntries.find(e => String(e.id) === String(currentEntryId));
-        if (entry) {
-            showEditDeleteForm(entry);
-        } else {
-             errorMsg.innerText = '배너 정보를 찾을 수 없습니다.';
-        }
+        const result = await sendDataToSheet(dataToSend, 'VERIFY'); // ⬅️ 'VERIFY' 액션 사용
 
-        document.getElementById('modalPasswordInput').value = ''; 
-        showCustomAlert('비밀번호가 확인되었습니다. 정보를 수정하거나 삭제하세요.');
-    } else {
-        errorMsg.innerText = '비밀번호가 일치하지 않습니다. 다시 시도하세요.';
+        checkButton.disabled = false;
+        checkButton.innerText = '비밀번호 확인';
+
+        if (result.success) {
+            // ⭐️⭐️ 중요: 검증된 비밀번호를 전역 변수에 저장 ⭐️⭐️
+            currentPassword = password; 
+            
+            const entry = allEntries.find(e => String(e.id) === String(currentEntryId));
+            if (entry) {
+                showEditDeleteForm(entry);
+            } else {
+                 errorMsg.innerText = '배너 정보를 찾을 수 없습니다.';
+            }
+
+            document.getElementById('modalPasswordInput').value = ''; 
+            showCustomAlert('비밀번호가 확인되었습니다. 정보를 수정하거나 삭제하세요.');
+        } else {
+            errorMsg.innerText = '비밀번호가 일치하지 않습니다. 다시 시도하세요.';
+        }
     }
-}
     
     function showEditDeleteForm(entry) {
         document.getElementById('passwordCheckModal').style.display = 'none';
@@ -1233,30 +1294,5 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
