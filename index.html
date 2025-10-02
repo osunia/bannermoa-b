@@ -726,15 +726,16 @@ document.addEventListener('contextmenu', function(e) {
 
 
         <div class="register-button-area">
-            <button id="openRegisterModal" onclick="openRegisterPanel()">✨ 배너 등록하기</button>
-            <button id="openActionButton" onclick="openCombinedActionPanel()">🛠️ 수정/삭제하기</button>
-        </div>
+    <button id="openRegisterModal" onclick="openRegisterPanel()">✨ 배너 등록하기</button>
+    <button id="openActionButton" onclick="openCombinedActionPanel()">🛠️ 수정/삭제하기</button>
+</div>
 
-        <div id="entryListContainer">
-            <p id="initialLoadingMessage" class="status-message">배너를 불러오는 중...</p>
-        </div>
+<p id="initialLoadingMessage" class="status-message" style="display: none;">배너를 불러오는 중...</p>
 
-        <div class="footer">
+<div id="entryListContainer">
+    </div>
+
+<div class="footer">
             <p style="margin-bottom: 3px;">©2025 bannermoa. All rights reserved.</p>
             <p style="margin-top: 0;">
                 <a href="#" onclick="redirectToMain(); return false;" style="color: #777;">메인 페이지로 돌아가기</a>
@@ -753,6 +754,7 @@ document.addEventListener('contextmenu', function(e) {
     let allEntries = [];        
     const openActionButton = document.getElementById('openActionButton'); 
     const entryListContainer = document.getElementById('entryListContainer');
+    // HTML 구조를 수정했으므로, 이 요소는 이제 entryListContainer 밖에 있습니다.
     const initialLoadingMessage = document.getElementById('initialLoadingMessage');
 
     // ⭐️ 로딩 애니메이션 전역 변수 추가 ⭐️
@@ -760,7 +762,6 @@ document.addEventListener('contextmenu', function(e) {
     const DOT_MESSAGES = {
         'LOAD': '배너를 불러오는 중',
         'REFRESH': '목록을 새로고침하는 중',
-        // '작업을 취소하는 중' 대신 '목록을 새로고침하는 중'을 사용합니다.
     };
 
     // ----------------------------------------------------
@@ -864,6 +865,7 @@ document.addEventListener('contextmenu', function(e) {
             if (initialLoadingMessage) {
                 // ⭐️ 애니메이션 중지 후 오류 메시지 출력 ⭐️
                 stopLoadingAnimation(); 
+                initialLoadingMessage.style.display = 'block'; // 오류 메시지를 보이게 함
                 initialLoadingMessage.innerText = '⚠️ 배너 로딩 중 오류 발생! Apps Script URL 또는 배포 상태를 확인하세요.';
             }
             return [];
@@ -940,27 +942,27 @@ document.addEventListener('contextmenu', function(e) {
     // ----------------------------------------------------
     
     async function loadEntries() {
-    if (initialLoadingMessage) {
-        initialLoadingMessage.style.display = 'block';
-        // ⭐️ 수정: 메시지를 설정하는 대신 애니메이션을 시작합니다. ⭐️
-        startLoadingAnimation(initialLoadingMessage, 'LOAD');
-    }
-    
-    const entries = await fetchEntriesFromSheet();
-    
-    // ⭐️ 추가: 데이터 로드가 완료되면 애니메이션을 중지합니다. ⭐️
-    stopLoadingAnimation(); 
+        if (initialLoadingMessage) {
+            initialLoadingMessage.style.display = 'block';
+            startLoadingAnimation(initialLoadingMessage, 'LOAD');
+        }
+        
+        const entries = await fetchEntriesFromSheet();
+        
+        // 데이터 로드가 완료되면 애니메이션을 중지합니다.
+        stopLoadingAnimation(); 
 
-    entries.reverse(); 
-    
-    entryListContainer.innerHTML = ''; 
-    
-    renderEntries(entries);
-}
+        entries.reverse(); 
+        
+        entryListContainer.innerHTML = ''; 
+        
+        renderEntries(entries);
+    }
 
     function renderEntries(entries) {
         
         if (initialLoadingMessage) {
+            // ⭐️ 수정: 렌더링이 시작되면 로딩 메시지 숨김 ⭐️
             initialLoadingMessage.style.display = 'none';
         }
         
@@ -1105,20 +1107,18 @@ document.addEventListener('contextmenu', function(e) {
         currentPassword = null;
         isEditingMode = false; // 모드 비활성화
 
-    // ⭐️ 수정된 로직: entryListContainer를 비우고, initialLoadingMessage를 다시 표시하며 애니메이션 시작 ⭐️
-    entryListContainer.innerHTML = '';
-    
-    // initialLoadingMessage가 entryListContainer 외부에 있으므로 DOM에서 접근하여 처리합니다.
-    if (initialLoadingMessage) {
-        initialLoadingMessage.style.display = 'block';
-        // 'REFRESH' 메시지 애니메이션 시작
-        startLoadingAnimation(initialLoadingMessage, 'REFRESH'); 
-    }
-    
-    // 데이터 로드가 완료되면 애니메이션 중지 및 목록 렌더링
-    loadEntries().finally(() => {
-        // loadEntries()가 완료되면 initialLoadingMessage는 loadEntries() 내부에서 숨겨집니다.
-        openActionButton.disabled = false; 
+        // ⭐️ 수정된 로직: entryListContainer를 비우고, initialLoadingMessage를 다시 표시하며 애니메이션 시작 ⭐️
+        entryListContainer.innerHTML = '';
+        
+        if (initialLoadingMessage) {
+            initialLoadingMessage.style.display = 'block';
+            startLoadingAnimation(initialLoadingMessage, 'REFRESH'); 
+        }
+        
+        // 데이터 로드가 완료되면 애니메이션 중지 및 목록 렌더링
+        loadEntries().finally(() => {
+            // loadEntries()가 완료되면 initialLoadingMessage는 loadEntries() 내부에서 숨겨집니다.
+            openActionButton.disabled = false; 
         });
     }
     
@@ -1171,19 +1171,18 @@ document.addEventListener('contextmenu', function(e) {
         checkButton.disabled = true;
         checkButton.innerText = '확인 중...';
 
-            // ⭐️⭐️ 수정: action을 'VERIFY'로 변경하고 임시 homeUrl/bannerUrl 제거 ⭐️⭐️
         const dataToSend = {
             id: currentEntryId,
             password: password,
         };
         
-        const result = await sendDataToSheet(dataToSend, 'VERIFY'); // ⬅️ 'VERIFY' 액션 사용
+        const result = await sendDataToSheet(dataToSend, 'VERIFY');
 
         checkButton.disabled = false;
         checkButton.innerText = '비밀번호 확인';
 
         if (result.success) {
-            // ⭐️⭐️ 중요: 검증된 비밀번호를 전역 변수에 저장 ⭐️⭐️
+            // ⭐️ 중요: 검증된 비밀번호를 전역 변수에 저장 ⭐️
             currentPassword = password; 
             
             const entry = allEntries.find(e => String(e.id) === String(currentEntryId));
@@ -1213,7 +1212,7 @@ document.addEventListener('contextmenu', function(e) {
     }
 
     // ----------------------------------------------------
-    // 6. 수정 및 삭제 처리 (이전 수정 버전과 동일)
+    // 6. 수정 및 삭제 처리 
     // ----------------------------------------------------
 
     async function saveEdit() {
@@ -1299,6 +1298,7 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
+
 
 
 
