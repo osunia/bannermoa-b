@@ -1105,15 +1105,23 @@ document.addEventListener('contextmenu', function(e) {
         currentPassword = null;
         isEditingMode = false; // 모드 비활성화
 
-        // 상태 초기화 후 다시 렌더링 (loadEntries()가 비동기 작업을 수행)
-        // ⭐️ 수정: 텍스트를 하드 코딩하는 대신 애니메이션을 시작합니다. ⭐️
-        entryListContainer.innerHTML = `<p class="status-message" id="tempLoadingMessage"></p>`;
-        const tempLoadingMessage = document.getElementById('tempLoadingMessage');
-        startLoadingAnimation(tempLoadingMessage, 'REFRESH'); // '목록을 새로고침하는 중' 애니메이션 시작
-        
-        loadEntries().finally(() => {
-            // loadEntries가 완료되면 자동으로 애니메이션이 중지됩니다.
-            openActionButton.disabled = false; 
+    // ⭐️ 수정된 로직: 임시 메시지 요소를 생성하고, DOM에 추가한 후 애니메이션 시작 ⭐️
+    const tempMessageElement = document.createElement('p');
+    tempMessageElement.className = 'status-message';
+    tempMessageElement.id = 'tempLoadingMessage'; // ID를 할당합니다.
+    tempMessageElement.innerText = '목록을 새로고침하는 중...'; // 초기 텍스트 설정
+    
+    // 기존 내용을 비우고 임시 메시지를 표시합니다.
+    entryListContainer.innerHTML = '';
+    entryListContainer.appendChild(tempMessageElement);
+
+    // DOM에 추가된 요소를 대상으로 애니메이션을 시작합니다.
+    startLoadingAnimation(tempMessageElement, 'REFRESH'); 
+    
+    // 데이터 로드가 완료되면 애니메이션 중지 및 목록 렌더링
+    loadEntries().finally(() => {
+        // loadEntries() 내부에서 stopLoadingAnimation()이 호출됩니다.
+        openActionButton.disabled = false; 
         });
     }
     
@@ -1294,5 +1302,6 @@ document.addEventListener('contextmenu', function(e) {
 </script>
 </body>
 </html>
+
 
 
