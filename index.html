@@ -159,19 +159,24 @@
             margin-bottom: 0; 
             background-color: #fff;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            text-align: left;
+            /* text-align: left; <- Flexbox를 사용하므로 제거 또는 주석 처리 */
             
             width: 230px; 
             max-width: 100%; 
             flex-shrink: 0; 
             flex-grow: 0; 
-
-/* ⭐️ 수정: 높이를 105px로 고정하여 모든 박스 크기를 통일합니다. ⭐️ */
+            
+            /* ⭐️ [유지] 높이를 105px로 고정합니다. ⭐️ */
             height: 105px; 
 
             box-sizing: border-box;
             position: relative; 
             transition: border-color 0.3s, box-shadow 0.3s, transform 0.1s;
+            
+            /* ⭐️ [수정] Flexbox를 사용하여 수직으로 배치 및 공간 분배 ⭐️ */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 배너 영역과 이름 영역을 상하로 밀어냅니다. */
         }
         
         .editing-mode .entry {
@@ -186,15 +191,26 @@
         }
         
         .entry-banner-area {
-            text-align: center;
-            padding: 5px 0 0 0; 
+            /* ⭐️ [수정] Flexbox를 사용하여 내부 배너 이미지를 수직/수평 중앙 정렬 ⭐️ */
+            display: flex;
+            justify-content: center; /* 수평 중앙 정렬 */
+            align-items: center;     /* 수직 중앙 정렬 */
+            flex-grow: 1; /* 남은 공간을 이 영역이 모두 차지하여 중앙 정렬에 사용합니다. */
+            
+            /* 기존 스타일 제거 */
+            /* text-align: center; */
+            /* padding: 5px 0 0 0; */
         }
         
         .entry-header {
             display: block; 
             text-align: center; 
-            margin-bottom: 0; 
-            padding-bottom: 0; 
+            /* margin-bottom: 0; */
+            /* padding-bottom: 0; */
+            flex-shrink: 0; /* 높이 고정 */
+            
+            /* ⭐️ [추가] 이름 영역 상단에 여백을 줍니다 (선택 사항) ⭐️ */
+            padding-top: 5px; 
         }
 
         .entry-name {
@@ -202,7 +218,9 @@
             font-weight: bold;
             color: #645d55;
             display: block; 
-            padding-top: 5px; 
+            
+            /* ⭐️ [수정] 이름 영역의 상하 패딩을 0으로 설정 ⭐️ */
+            padding-top: 0; 
             padding-bottom: 0; 
         }
         
@@ -212,14 +230,13 @@
         }
 
         .entry-banner {
-            /* ⭐️ 수정: 너비를 200px로 고정합니다. ⭐️ */
+            /* ⭐️ [유지] 너비를 200px로 고정합니다. ⭐️ */
             width: 200px; 
             
-            /* ⭐️ 수정: 높이를 'auto'로 설정하여 너비(200px)에 맞춰 비율을 자동 조정합니다. ⭐️ */
+            /* ⭐️ [유지] 높이를 'auto'로 설정하여 너비(200px)에 맞춰 비율을 자동 조정합니다. ⭐️ */
             height: auto; 
-            
-            /* 기존 max-width: 100%는 width: 200px로 인해 사실상 불필요하지만, 혹시 .entry의 너비(230px)보다 작게 표시되어야 할 경우를 대비해 제거하거나 유지해도 무방합니다. 여기서는 200px로 고정하기 위해 제거합니다. */
-            /* max-width: 100%; <- 제거 */
+
+            /* 기존 max-width: 100% 제거 */
 
             border: 1px solid #ccc;
             display: block;
@@ -1258,6 +1275,7 @@
 </script>
 </body>
 </html>
+
 
 
 
