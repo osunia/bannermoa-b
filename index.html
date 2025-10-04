@@ -492,32 +492,37 @@
             <p id="modalError"></p>
         </div>
 
-        <div id="actionPanel" style="display: none;">
-            <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span>
-            <h3 id="panelTitle">🛠️ 선택 항목 수정/삭제</h3>
+<div id="actionPanel" style="display: none;">
+    <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span>
+    <h3 id="panelTitle">🛠️ 선택 항목 수정/삭제</h3>
 
-            <div id="editFormGroup">
-                <p style="text-align: center; font-weight: bold; color: #645d55;">선택된 배너 정보 수정</p>
-                <div class="form-group">
-                    <label for="editHomeUrlInput">새 갠홈 주소</label>
-                    <input type="url" id="editHomeUrlInput" placeholder="https://new-home.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="editBannerUrlInput">새 배너 이미지 주소</label>
-                    <input type="url" id="editBannerUrlInput" placeholder="https://new-banner.png" required>
-                </div>
+    <div id="editFormGroup">
+        <p style="text-align: center; font-weight: bold; color: #645d55;">선택된 배너 정보 수정</p>
 
-                <div class="input-group" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
-                    <label for="editNewPasswordInput">새 비밀번호 (선택 사항)</label>
-                    <input type="password" id="editNewPasswordInput" placeholder="비밀번호 변경 시에만 입력 (4자 이상)" minlength="4">
-                    <p class="input-info">※ 비밀번호를 변경하지 않으려면 이 칸을 비워두세요.</p>
-                </div>
-                <div class="action-button-group">
-                    <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
-                    <button id="deleteEntryButton" class="action-panel-button" onclick="confirmDelete()">배너 삭제</button>
-                </div>
-            </div>
+        <div class="form-group">
+            <label for="editNameInput">닉네임/이름</label>
+            <input type="text" id="editNameInput" placeholder="새 닉네임/이름" required>
         </div>
+        <div class="form-group">
+            <label for="editHomeUrlInput">새 갠홈 주소</label>
+            <input type="url" id="editHomeUrlInput" placeholder="https://new-home.com" required>
+        </div>
+        <div class="form-group">
+            <label for="editBannerUrlInput">새 배너 이미지 주소</label>
+            <input type="url" id="editBannerUrlInput" placeholder="https://new-banner.png" required>
+        </div>
+
+        <div class="input-group" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+            <label for="editNewPasswordInput">새 비밀번호 (선택 사항)</label>
+            <input type="password" id="editNewPasswordInput" placeholder="비밀번호 변경 시에만 입력 (4자 이상)" minlength="4">
+            <p class="input-info">※ 비밀번호를 변경하지 않으려면 이 칸을 비워두세요.</p>
+        </div>
+        <div class="action-button-group">
+            <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
+            <button id="deleteEntryButton" class="action-panel-button" onclick="confirmDelete()">배너 삭제</button>
+        </div>
+    </div>
+</div>
 
 
         <div class="register-button-area">
@@ -1233,6 +1238,10 @@ window.addEventListener('scroll', function() {
         document.getElementById('passwordCheckModal').style.display = 'none';
         
         document.getElementById('panelTitle').innerText = `'${entry.name}' 수정/삭제`;
+        
+        // ⭐️ [추가] 닉네임/이름을 입력 필드에 채웁니다. ⭐️
+        document.getElementById('editNameInput').value = entry.name; 
+        
         document.getElementById('editHomeUrlInput').value = entry.homeUrl;
         document.getElementById('editBannerUrlInput').value = entry.bannerUrl;
         document.getElementById('editNewPasswordInput').value = ''; 
@@ -1245,13 +1254,22 @@ window.addEventListener('scroll', function() {
     // 6. 수정 및 삭제 처리 
     // ----------------------------------------------------
 
-    async function saveEdit() {
+async function saveEdit() {
+        // ⭐️ [추가] 닉네임/이름 입력 값 가져오기 ⭐️
+        const newName = document.getElementById('editNameInput').value.trim();
+        
         const newHomeUrl = document.getElementById('editHomeUrlInput').value.trim();
         const newBannerUrl = document.getElementById('editBannerUrlInput').value.trim();
         const newPassword = document.getElementById('editNewPasswordInput').value.trim(); 
 
         if (!currentPassword) {
             showCustomAlert('수정할 항목을 선택하고 비밀번호를 확인해야 합니다.', false);
+            return;
+        }
+
+        // ⭐️ [수정] 닉네임/이름 유효성 검사 추가 ⭐️
+        if (!newName || newName.length < 2) {
+            showCustomAlert('닉네임/이름은 2자 이상 입력해야 합니다.', false);
             return;
         }
 
@@ -1272,6 +1290,9 @@ window.addEventListener('scroll', function() {
         const dataToSend = {
             id: currentEntryId,
             password: currentPassword, 
+            // ⭐️ [추가] 닉네임/이름 데이터 전송 ⭐️
+            name: newName, 
+            
             homeUrl: newHomeUrl,
             bannerUrl: newBannerUrl,
             newPassword: newPassword 
@@ -1331,6 +1352,7 @@ window.addEventListener('scroll', function() {
     </button>
 </body>
 </html>
+
 
 
 
