@@ -10,6 +10,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
     
     <style>
+
+/* Scroll to Top 버튼 스타일 */
+    #scrollToTopBtn {
+    display: none; /* 기본적으로 숨김 */
+    position: fixed; /* 뷰포트에 고정 */
+    bottom: 20px; /* 오른쪽 하단에서 20px 위 */
+    right: 20px; /* 오른쪽 하단에서 20px 왼쪽 */
+    z-index: 1000; /* 파티클과 UI 위에 표시 */
+    border: none;
+    outline: none;
+    background-color: #ab9172; /* 버튼 배경색 */
+    color: white;
+    cursor: pointer;
+    padding: 10px 12px;
+    border-radius: 50%; /* 원형 버튼 */
+    font-size: 1.5em; /* 화살표 크기 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, opacity 0.3s;
+    opacity: 0.8;
+    }
+
+    #scrollToTopBtn:hover {
+    background-color: #927c65;
+    opacity: 1;
+    }
+        
         body {
             font-family: 'Gowun Dodum', Arial, sans-serif;
             text-align: center; 
@@ -512,6 +538,33 @@
     </div>
 
 <script>
+
+    // 페이지 맨 위로 스크롤하는 함수 (부드럽게 올라가도록 '쇼로록' 효과 적용)
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth' 
+    });
+}
+
+// 스크롤 위치 감지 함수: 버튼 표시/숨김
+function scrollFunction() {
+    const btn = document.getElementById("scrollToTopBtn");
+    
+    // 문서의 상단에서 500px 이상 스크롤했을 때 버튼 표시
+    if (document.body.scrollTop > 500 || document.documentElement.scrollTop > 500) {
+        btn.style.display = "block";
+    } else {
+        // 맨 위로 돌아왔을 때 버튼 숨김
+        btn.style.display = "none";
+    }
+}
+
+// ⭐️ 모든 환경(PC/모바일)에서 스크롤 이벤트에 연결 ⭐️
+window.addEventListener('scroll', function() {
+    scrollFunction(); // 조건 없이 항상 버튼 표시/숨김 함수 호출
+}, { passive: true });
+    
     // **********************************************
     // ⭐️ 파티클 관련 함수 (HEAD에서 BODY로 이동) ⭐️
     // **********************************************
@@ -1273,8 +1326,12 @@
         deleteButton.innerText = '배너 삭제';
     }
 </script>
+    <button onclick="scrollToTop()" id="scrollToTopBtn" title="맨 위로 가기">
+        &#9650;
+    </button>
 </body>
 </html>
+
 
 
 
