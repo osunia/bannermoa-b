@@ -209,8 +209,15 @@
         }
 
         .entry-banner {
-            max-width: 100%;
-            height: auto;
+            /* ⭐️ 수정: 너비를 200px로 고정합니다. ⭐️ */
+            width: 200px; 
+            
+            /* ⭐️ 수정: 높이를 'auto'로 설정하여 너비(200px)에 맞춰 비율을 자동 조정합니다. ⭐️ */
+            height: auto; 
+            
+            /* 기존 max-width: 100%는 width: 200px로 인해 사실상 불필요하지만, 혹시 .entry의 너비(230px)보다 작게 표시되어야 할 경우를 대비해 제거하거나 유지해도 무방합니다. 여기서는 200px로 고정하기 위해 제거합니다. */
+            /* max-width: 100%; <- 제거 */
+
             border: 1px solid #ccc;
             display: block;
             margin: 0 auto;
@@ -1248,6 +1255,7 @@
 </script>
 </body>
 </html>
+
 
 
 
