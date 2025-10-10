@@ -440,107 +440,110 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="container">
 
-        <div class="header-area">
-            <h1 class="main-title"><span class="emoji-small">🌰</span>배너모아<span class="emoji-small">🐿️</span></h1>
-            <h2 class="sub-title">방명록</h2>
-        </div>
+        <div class="header-area">
+            <h1 class="main-title"><span class="emoji-small">🌰</span>배너모아<span class="emoji-small">🐿️</span></h1>
+            <h2 class="sub-title">방명록</h2>
+        </div>
 
-        <div id="customAlert" class="custom-alert" style="display: none;"></div>
+                <p class="info-message-small" id="bannerCountMessage" style="margin: 10px 0 20px 0; color: #666; font-size: 0.9em; text-align: center;">
+            현재 동맹 배너 정보를 불러오는 중입니다. 잠시만 기다려주세요! 🌐
+        </p>
+                <div id="customAlert" class="custom-alert" style="display: none;"></div>
 
-        <div id="registerPanel" style="display: none;">
-            <span class="close-btn" onclick="closeRegisterPanel()">&times;</span>
-            <h3>✨ 배너 등록하기</h3>
-            <div id="registerForm">
-                <div class="form-group">
-                    <label for="nameInput">닉네임/사이트 이름</label>
-                    <input type="text" id="nameInput" placeholder="이름 (필수)" required>
-                </div>
-                <div class="form-group">
-                    <label for="homeUrlInput">갠홈/블로그 주소</label>
-                    <input type="url" id="homeUrlInput" placeholder="https://yourhome.com (필수)" required>
-                </div>
-                <div class="form-group">
-                    <label for="bannerUrlInput">배너 이미지 주소</label>
-                    <input type="url" id="bannerUrlInput" placeholder="https://banner-image.png (필수)" required>
-                </div>
-                <div class="form-group">
-                    <label for="passwordInput">비밀번호 (수정/삭제용)</label>
-                <input type="password" id="passwordInput" placeholder="4자 이상 (필수)" minlength="4" required>
-                </div>
+        <div id="registerPanel" style="display: none;">
+            <span class="close-btn" onclick="closeRegisterPanel()">&times;</span>
+            <h3>✨ 배너 등록하기</h3>
+            <div id="registerForm">
+                <div class="form-group">
+                    <label for="nameInput">닉네임/사이트 이름</label>
+                    <input type="text" id="nameInput" placeholder="이름 (필수)" required>
+                </div>
+                <div class="form-group">
+                    <label for="homeUrlInput">갠홈/블로그 주소</label>
+                    <input type="url" id="homeUrlInput" placeholder="https://yourhome.com (필수)" required>
+                </div>
+                <div class="form-group">
+                    <label for="bannerUrlInput">배너 이미지 주소</label>
+                    <input type="url" id="bannerUrlInput" placeholder="https://banner-image.png (필수)" required>
+                </div>
+                <div class="form-group">
+                    <label for="passwordInput">비밀번호 (수정/삭제용)</label>
+                <input type="password" id="passwordInput" placeholder="4자 이상 (필수)" minlength="4" required>
+                </div>
 
-                <div class="warning-text">
-                    도배성 게시물 및 비방글은 사전 고지 없이 즉시 삭제됩니다.
-                </div>
+                <div class="warning-text">
+                    도배성 게시물 및 비방글은 사전 고지 없이 즉시 삭제됩니다.
+                </div>
 
-                <button id="submitEntry" class="modal-submit-button" onclick="addEntry()">등록하기</button>
-            </div>
-        </div>
+                <button id="submitEntry" class="modal-submit-button" onclick="addEntry()">등록하기</button>
+            </div>
+        </div>
 
-        <div id="passwordCheckModal" style="display: none;">
-            <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span>
-            <h3>🔐 비밀번호 확인</h3>
-            <p id="passwordCheckTarget"></p>
-            <div id="passwordInputGroup">
-                <div class="form-group">
-                    <label for="modalPasswordInput">수정/삭제 비밀번호 입력</label>
-                    <input type="password" id="modalPasswordInput" placeholder="비밀번호" required>
-                </div>
-                <button id="checkPasswordButton" class="action-panel-button" onclick="checkPassword()">비밀번호 확인</button>
-            </div>
-            <p id="modalError"></p>
-        </div>
+        <div id="passwordCheckModal" style="display: none;">
+            <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span>
+            <h3>🔐 비밀번호 확인</h3>
+            <p id="passwordCheckTarget"></p>
+            <div id="passwordInputGroup">
+                <div class="form-group">
+                    <label for="modalPasswordInput">수정/삭제 비밀번호 입력</label>
+                    <input type="password" id="modalPasswordInput" placeholder="비밀번호" required>
+                </div>
+                <button id="checkPasswordButton" class="action-panel-button" onclick="checkPassword()">비밀번호 확인</button>
+            </div>
+            <p id="modalError"></p>
+        </div>
 
 <div id="actionPanel" style="display: none;">
-    <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span>
-    <h3 id="panelTitle">🛠️ 선택 항목 수정/삭제</h3>
+    <span class="close-btn" onclick="closeActionModalsAndPanels()">&times;</span>
+    <h3 id="panelTitle">🛠️ 선택 항목 수정/삭제</h3>
 
-    <div id="editFormGroup">
-        <p style="text-align: center; font-weight: bold; color: #645d55;">선택된 배너 정보 수정</p>
+    <div id="editFormGroup">
+        <p style="text-align: center; font-weight: bold; color: #645d55;">선택된 배너 정보 수정</p>
 
-        <div class="form-group">
-            <label for="editNameInput">닉네임/이름</label>
-            <input type="text" id="editNameInput" placeholder="새 닉네임/이름" required>
-        </div>
-        <div class="form-group">
-            <label for="editHomeUrlInput">새 갠홈 주소</label>
-            <input type="url" id="editHomeUrlInput" placeholder="https://new-home.com" required>
-        </div>
-        <div class="form-group">
-            <label for="editBannerUrlInput">새 배너 이미지 주소</label>
-            <input type="url" id="editBannerUrlInput" placeholder="https://new-banner.png" required>
-        </div>
+        <div class="form-group">
+            <label for="editNameInput">닉네임/이름</label>
+            <input type="text" id="editNameInput" placeholder="새 닉네임/이름" required>
+        </div>
+        <div class="form-group">
+            <label for="editHomeUrlInput">새 갠홈 주소</label>
+            <input type="url" id="editHomeUrlInput" placeholder="https://new-home.com" required>
+        </div>
+        <div class="form-group">
+            <label for="editBannerUrlInput">새 배너 이미지 주소</label>
+            <input type="url" id="editBannerUrlInput" placeholder="https://new-banner.png" required>
+        </div>
 
-        <div class="input-group" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
-            <label for="editNewPasswordInput">새 비밀번호 (선택 사항)</label>
-            <input type="password" id="editNewPasswordInput" placeholder="비밀번호 변경 시에만 입력 (4자 이상)" minlength="4">
-            <p class="input-info">※ 비밀번호를 변경하지 않으려면 이 칸을 비워두세요.</p>
-        </div>
-        <div class="action-button-group">
-            <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
-            <button id="deleteEntryButton" class="action-panel-button" onclick="confirmDelete()">배너 삭제</button>
-        </div>
-    </div>
+        <div class="input-group" style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+            <label for="editNewPasswordInput">새 비밀번호 (선택 사항)</label>
+            <input type="password" id="editNewPasswordInput" placeholder="비밀번호 변경 시에만 입력 (4자 이상)" minlength="4">
+            <p class="input-info">※ 비밀번호를 변경하지 않으려면 이 칸을 비워두세요.</p>
+        </div>
+        <div class="action-button-group">
+            <button id="saveEditButton" class="action-panel-button" onclick="saveEdit()">수정 저장</button>
+            <button id="deleteEntryButton" class="action-panel-button" onclick="confirmDelete()">배너 삭제</button>
+        </div>
+    </div>
 </div>
 
 
-        <div class="register-button-area">
-            <button id="openRegisterModal" onclick="openRegisterPanel()">✨ 배너 등록하기</button>
-            <button id="openActionButton" onclick="openCombinedActionPanel()">🛠️ 수정/삭제하기</button>
-        </div>
+        <div class="register-button-area">
+            <button id="openRegisterModal" onclick="openRegisterPanel()">✨ 배너 등록하기</button>
+            <button id="openActionButton" onclick="openCombinedActionPanel()">🛠️ 수정/삭제하기</button>
+        </div>
 
-        <div id="entryListContainer">
-            <p id="initialLoadingMessage" class="status-message">배너를 불러오는 중...</p>
-        </div>
+        <div id="entryListContainer">
+            <p id="initialLoadingMessage" class="status-message">배너를 불러오는 중...</p>
+        </div>
 
-        <div class="footer">
-            <p style="margin-bottom: 3px;">©2025 bannermoa. All rights reserved.</p>
-            <p style="margin-top: 0;">
-                <a href="#" onclick="redirectToMain(); return false;" style="color: #777;">메인 페이지로 돌아가기</a>
-            </p>
-        </div>
-    </div>
+        <div class="footer">
+            <p style="margin-bottom: 3px;">©2025 bannermoa. All rights reserved.</p>
+            <p style="margin-top: 0;">
+                <a href="#" onclick="redirectToMain(); return false;" style="color: #777;">메인 페이지로 돌아가기</a>
+            </p>
+        </div>
+    </div>
 
 <script>
 
@@ -1014,6 +1017,21 @@ window.addEventListener('scroll', function() {
         if (initialLoadingMessage) {
             initialLoadingMessage.style.display = 'none';
         }
+
+// 🌟 [JavaScript 추가]: 배너 개수를 세어 문구를 업데이트하는 코드
+    const count = entries ? entries.length : 0;
+    const countMessageElement = document.getElementById('bannerCountMessage');
+    
+    if (countMessageElement) {
+        if (count > 0) {
+            countMessageElement.innerHTML = `현재 <b>${count}개</b>의 배너가 등록되어 있습니다. 감사합니다! ❤️`;
+            countMessageElement.style.color = '#ab9172';
+        } else {
+            countMessageElement.innerText = '아직 등록된 배너가 없습니다.'; 
+            countMessageElement.style.color = '#d9534f'; 
+        }
+    }
+    // ----------------------------------------------
         
         if (!entries || entries.length === 0) {
             entryListContainer.innerHTML = `
@@ -1352,6 +1370,7 @@ async function saveEdit() {
     </button>
 </body>
 </html>
+
 
 
 
