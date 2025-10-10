@@ -541,7 +541,15 @@
             </p>
         </div>
     </div>
-
+<div id="google_translate_element" style="display: none;"></div> 
+    
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    </div>
 <script>
 
     // 페이지 맨 위로 스크롤하는 함수 (부드럽게 올라가도록 '쇼로록' 효과 적용)
@@ -1352,6 +1360,7 @@ async function saveEdit() {
     </button>
 </body>
 </html>
+
 
 
 
