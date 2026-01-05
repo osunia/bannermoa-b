@@ -610,12 +610,23 @@ window.addEventListener('scroll', function() {
 
     function initializeSparkles() { 
         if (document.getElementById) {
+            
+            // ⭐️ [신규] 파티클을 가둘 '투명 상자(Wrapper)'를 생성합니다.
+            // 이 상자는 overflow: hidden 속성을 가져서, 파티클이 상자 밖으로 나가면 화면을 늘리는 게 아니라 그냥 잘려서 안 보이게 됩니다.
+            var pContainer = document.createElement("div");
+            pContainer.id = "particle-container";
+            pContainer.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; pointer-events:none; z-index:999;";
+            document.body.appendChild(pContainer);
+
             var i, rats, rlef, rdow;
             for (var i=0; i<sparkles; i++) {
                 var rats=createDiv(3, 3);
                 rats.style.visibility="hidden";
                 rats.style.zIndex="999";
-                document.body.appendChild(tiny[i]=rats);
+                
+                // ⭐️ [수정] body가 아니라, 우리가 만든 '상자(pContainer)'에 파티클을 넣습니다.
+                pContainer.appendChild(tiny[i]=rats);
+                
                 starv[i]=0;
                 tinyv[i]=0;
                 var rats=createDiv(5, 5);
@@ -630,7 +641,9 @@ window.addEventListener('scroll', function() {
                 rlef.style.left="0px";
                 rdow.style.top="0px";
                 rdow.style.left="2px";
-                document.body.appendChild(star[i]=rats);
+                
+                // ⭐️ [수정] 여기도 상자(pContainer)에 넣습니다.
+                pContainer.appendChild(star[i]=rats);
             }
             set_width();
             sparkle();
@@ -767,7 +780,7 @@ window.addEventListener('scroll', function() {
         var sw_min=999999;
         var sh_min=999999;
 
-        // 1. 화면 너비 계산 (기존 유지)
+        // 1. 화면 크기 계산
         if (document.documentElement && document.documentElement.clientWidth) {
             if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
             if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
@@ -786,20 +799,26 @@ window.addEventListener('scroll', function() {
         }
         swide=sw_min;
 
-        // 2. [핵심 수정] 파티클의 '바닥(shigh)'을 '푸터의 끝부분'으로 고정합니다.
-        // 스크롤이 늘어나는 원인인 document.body.scrollHeight를 아예 쓰지 않습니다.
+        // ⭐️ [신규] 문서 전체 높이를 구합니다.
+        var docHeight = Math.max(
+            document.body.scrollHeight, document.documentElement.scrollHeight,
+            document.body.offsetHeight, document.documentElement.offsetHeight,
+            document.documentElement.clientHeight
+        );
+
+        // ⭐️ [신규] 아까 만든 '투명 상자'의 높이를 문서 높이와 똑같이 맞춥니다.
+        var pContainer = document.getElementById('particle-container');
+        if (pContainer) {
+            pContainer.style.height = docHeight + "px";
+        }
+
+        // 2. 파티클이 사라질 위치(shigh) 설정 (푸터 기준)
         var footer = document.querySelector('.footer');
-        
         if (footer) {
-            // 푸터가 화면의 어디에 있는지 계산해서, 딱 거기까지만 파티클이 내려오게 설정합니다.
-            // window.scrollY를 더해주는 이유는 현재 스크롤된 위치까지 포함한 '문서 전체 좌표'를 구하기 위함입니다.
             var footerBottom = footer.getBoundingClientRect().bottom + window.scrollY;
-            
-            // 푸터 끝에서 5px 정도 여유를 두고 멈추게 하여, 바닥을 밀어내는 것을 방지합니다.
-            shigh = footerBottom - 5; 
+            shigh = footerBottom; // 푸터 끝까지 내려오게 둡니다. (상자가 잘라줄 테니까요!)
         } else {
-            // 만약 푸터를 못 찾으면 안전하게 현재 보이는 화면 높이로 설정합니다.
-            shigh = sh_min; 
+            shigh = docHeight;
         }
     }
 
@@ -1363,5 +1382,3 @@ async function saveEdit() {
     </button>
 </body>
 </html>
-
-
