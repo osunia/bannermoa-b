@@ -766,8 +766,8 @@ window.addEventListener('scroll', function() {
     function set_width() {
         var sw_min=999999;
         var sh_min=999999;
-        
-        // 1. 현재 보고 있는 화면(뷰포트)의 크기를 구합니다.
+
+        // 1. 화면 너비 계산 (기존 유지)
         if (document.documentElement && document.documentElement.clientWidth) {
             if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
             if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
@@ -785,20 +785,22 @@ window.addEventListener('scroll', function() {
             sh_min=600;
         }
         swide=sw_min;
+
+        // 2. [핵심 수정] 파티클의 '바닥(shigh)'을 '푸터의 끝부분'으로 고정합니다.
+        // 스크롤이 늘어나는 원인인 document.body.scrollHeight를 아예 쓰지 않습니다.
+        var footer = document.querySelector('.footer');
         
-        // 2. [핵심 수정] 바닥 기준을 '페이지 전체'가 아닌 '컨테이너(내용물)'로 변경합니다.
-        // 이렇게 하면 파티클이 페이지를 늘려도, 이 기준점은 변하지 않아서 스크롤이 고정됩니다.
-        var container = document.querySelector('.container');
-        var contentBottom = 0;
-
-        if (container) {
-            // 컨테이너 높이 + 상단 여백 + 하단 여백(50px)을 계산해서 '진짜 바닥'을 찾습니다.
-            contentBottom = container.offsetTop + container.offsetHeight + 50;
+        if (footer) {
+            // 푸터가 화면의 어디에 있는지 계산해서, 딱 거기까지만 파티클이 내려오게 설정합니다.
+            // window.scrollY를 더해주는 이유는 현재 스크롤된 위치까지 포함한 '문서 전체 좌표'를 구하기 위함입니다.
+            var footerBottom = footer.getBoundingClientRect().bottom + window.scrollY;
+            
+            // 푸터 끝에서 5px 정도 여유를 두고 멈추게 하여, 바닥을 밀어내는 것을 방지합니다.
+            shigh = footerBottom - 5; 
+        } else {
+            // 만약 푸터를 못 찾으면 안전하게 현재 보이는 화면 높이로 설정합니다.
+            shigh = sh_min; 
         }
-
-        // '화면 높이'와 '컨테이너 바닥' 중 더 긴 곳을 파티클이 떨어질 한계선(shigh)으로 잡습니다.
-        // 내용이 적을 땐 화면 끝까지, 내용이 많을 땐 컨테이너 끝까지만 떨어집니다.
-        shigh = Math.max(sh_min, contentBottom);
     }
 
     function createDiv(height, width) {
@@ -1361,4 +1363,5 @@ async function saveEdit() {
     </button>
 </body>
 </html>
+
 
