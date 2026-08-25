@@ -254,20 +254,20 @@
             text-align: center;
         }
 
-        .entry-banner {
-            width: 200px; 
-            height: auto; 
-
-            border: none;
-
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
-
-            display: block;
-            margin: 0 auto;
-            cursor: pointer;
-
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+.entry-banner {
+    width: 200px; 
+    height: auto; 
+    max-height: 67px;
+    object-fit: cover;
+    object-position: center;
+    
+    border: none;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+    display: block;
+    margin: 0 auto;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
 
         .entry-banner:hover {
             transform: scale(1.03);
