@@ -69,28 +69,16 @@
             user-select: none;
         }
 
-.container {
-    width: 240px; 
-    margin: 0 auto;
-    padding: 25px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-    opacity: 0;
-    transition: opacity 1s ease-in-out, width 0.3s ease; 
-}
-
-@media (min-width: 600px) {
-    .container {
-        width: 480px; 
-    }
-}
-
-@media (min-width: 850px) {
-    .container {
-        width: 720px; 
-    }
-}
+        .container {
+            max-width: 480px; 
+            margin: 0 auto;
+            padding: 25px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 1s ease-in-out; 
+        }
 
         .container.loaded {
             opacity: 1;
@@ -288,18 +276,17 @@
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
         }
 
-
-#registerPanel, #actionPanel, #passwordCheckModal {
-    background-color: #fefefe;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 0 auto 30px auto;
-    max-width: 440px; 
-    text-align: left;
-    display: none; 
-}
+        /* 패널 및 모달 스타일 */
+        #registerPanel, #actionPanel, #passwordCheckModal {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            text-align: left;
+            display: none; 
+        }
         
         #registerPanel h3, #actionPanel h3, #passwordCheckModal h3 {
             text-align: center;
